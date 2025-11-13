@@ -1,0 +1,42 @@
+module:
+  name: sns-topic
+  system: aws
+  version: 1.0.0
+  description: "Production-ready AWS SNS topic with subscription management and encryption support"
+  categories:
+    - messaging
+    - notifications
+    - sns
+    - pubsub
+  authors:
+    - name: "Lace Platform Team"
+      email: "team@lace.cloud"
+  example: |
+    module "notification_topic" {
+      source = "git::https://github.com/lace-cloud/registry-tf.git//examples/terraform-registry/modules/aws-sns?ref=<commit-sha>"
+
+      topic_name   = "user-notifications"
+      display_name = "User Notification Topic"
+
+      subscriptions = [
+        {
+          protocol = "email"
+          endpoint = "alerts@example.com"
+        },
+        {
+          protocol = "sqs"
+          endpoint = "arn:aws:sqs:us-east-1:123456789012:my-queue"
+          raw_message_delivery = true
+        },
+        {
+          protocol = "lambda"
+          endpoint = "arn:aws:lambda:us-east-1:123456789012:function:process-notifications"
+        }
+      ]
+
+      kms_master_key_id = aws_kms_key.sns.id
+
+      tags = {
+        Project = "notifications"
+      }
+    }
