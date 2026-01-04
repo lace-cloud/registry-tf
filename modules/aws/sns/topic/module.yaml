@@ -1,19 +1,23 @@
 module:
+  id: aws/sns/topic
   name: sns-topic
   system: aws
   version: 1.0.0
   description: "Production-ready AWS SNS topic with subscription management and encryption support"
+
   categories:
     - messaging
     - notifications
     - sns
     - pubsub
+
   authors:
-    - name: "Lace Platform Team"
+    - name: "Lace Team"
       email: "team@lace.cloud"
+
   example: |
     module "notification_topic" {
-      source = "git::https://github.com/lace-cloud/registry-tf.git//examples/terraform-registry/modules/aws-sns?ref=<commit-sha>"
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/sns/topic?ref=<commit-sha>"
 
       topic_name   = "user-notifications"
       display_name = "User Notification Topic"

@@ -1,28 +1,29 @@
 module:
+  id: aws/s3/bucket
   name: s3-bucket
   system: aws
   version: 1.0.0
   description: "Production-ready S3 bucket with encryption, versioning, and lifecycle policies"
-  
+
   categories:
     - storage
     - s3
     - security
-  
+
   authors:
     - name: "Lace Team"
       email: "team@lace.cloud"
-  
+
   example: |
     module "my_bucket" {
-      source = "git::https://github.com/lace-cloud/registry-tf.git//test-modules/aws-s3-bucket?ref=<commit-sha>"
-      
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/s3/bucket?ref=<commit-sha>"
+
       bucket_name         = "my-app-data-bucket"
       environment         = "production"
       enable_versioning   = true
       enable_encryption   = true
       block_public_access = true
-      
+
       lifecycle_rules = [
         {
           id      = "archive-old-objects"
@@ -38,4 +39,3 @@ module:
         }
       ]
     }
-

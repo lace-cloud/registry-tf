@@ -1,0 +1,24 @@
+module:
+  id: aws/iam/policy_attachment
+  name: iam-policy-attachment
+  system: aws
+  version: 1.0.0
+  description: "AWS IAM role policy attachment for connecting policies to roles"
+
+  categories:
+    - iam
+    - security
+    - permissions
+
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+
+  example: |
+    module "attach_policy" {
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/iam/policy_attachment?ref=<commit-sha>"
+
+      role_name  = module.my_role.role_name
+      policy_arn = module.my_policy.policy_arn
+    }
+
