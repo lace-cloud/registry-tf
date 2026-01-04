@@ -41,14 +41,51 @@ jobs:
             exit 0
           fi
 
-          # Extract unique module directories (format: modules/aws-s3-bucket)
-          module_dirs=$(echo "$changed_files" | cut -d'/' -f1,2 | sort -u)
+          echo "Changed files:"
+          echo "$changed_files"
+
+          # Function to find module root (directory containing module.yaml)
+          find_module_root() {
+            local path="$1"
+            local dir=$(dirname "$path")
+            
+            # Walk up until we find module.yaml or traverse out of modules/
+            while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+              if [ -f "$dir/module.yaml" ]; then
+                echo "$dir"
+                return 0
+              fi
+              # Stop if we went up to the parent of modules directory
+              if [ "$dir" == "." ] || [ "$dir" == "modules" ]; then
+                return 1
+              fi
+              dir=$(dirname "$dir")
+            done
+            return 1
+          }
+
+          # Find unique module directories
+          module_dirs=""
+          for file in $changed_files; do
+            if module_root=$(find_module_root "$file"); then
+              module_dirs="$module_dirs$module_root"$'\n'
+            fi
+          done
+
+          # Sort unique
+          unique_modules=$(echo "$module_dirs" | sort -u | sed '/^$/d')
 
           echo "Modified modules:"
-          echo "$module_dirs"
+          echo "$unique_modules"
+
+          if [ -z "$unique_modules" ]; then
+             echo "No valid modules found in modified files (module.yaml missing)"
+             echo "modules_found=false" >> $GITHUB_OUTPUT
+             exit 0
+          fi
 
           # Convert to JSON array for matrix strategy
-          modules_json=$(echo "$module_dirs" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          modules_json=$(echo "$unique_modules" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "modules_json=$modules_json" >> $GITHUB_OUTPUT
           echo "modules_found=true" >> $GITHUB_OUTPUT
 
