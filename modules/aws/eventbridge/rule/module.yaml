@@ -1,0 +1,25 @@
+module:
+  id: aws/eventbridge/rule
+  name: eventbridge-rule
+  system: aws
+  version: 1.0.0
+  description: "AWS EventBridge rule with schedule or event pattern and configurable targets"
+  categories:
+    - events
+    - eventbridge
+    - scheduling
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "rule" {
+      source              = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/eventbridge/rule?ref=v1.0.0"
+      name                = "daily-cleanup"
+      schedule_expression = "rate(1 day)"
+      targets = [
+        {
+          arn = "arn:aws:lambda:us-east-1:123456789:function:cleanup"
+        }
+      ]
+    }

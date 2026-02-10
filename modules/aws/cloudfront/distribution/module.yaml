@@ -1,0 +1,22 @@
+module:
+  id: aws/cloudfront/distribution
+  name: cloudfront-distribution
+  system: aws
+  version: 1.0.0
+  description: "AWS CloudFront distribution for CDN and static site hosting"
+  categories:
+    - cdn
+    - cloudfront
+    - networking
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "cdn" {
+      source              = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudfront/distribution?ref=v1.0.0"
+      origin_domain_name  = "my-bucket.s3.amazonaws.com"
+      origin_id           = "S3-my-bucket"
+      default_root_object = "index.html"
+      price_class         = "PriceClass_100"
+    }

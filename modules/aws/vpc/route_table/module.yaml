@@ -1,0 +1,26 @@
+module:
+  id: aws/vpc/route_table
+  name: vpc-route-table
+  system: aws
+  version: 1.0.0
+  description: "AWS VPC Route Table with configurable routes and subnet associations"
+  categories:
+    - networking
+    - vpc
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "rt" {
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/vpc/route_table?ref=v1.0.0"
+      vpc_id = "vpc-123456"
+      name   = "public-rt"
+      routes = [
+        {
+          cidr_block = "0.0.0.0/0"
+          gateway_id = "igw-123456"
+        }
+      ]
+      subnet_ids = ["subnet-111", "subnet-222"]
+    }

@@ -1,0 +1,21 @@
+module:
+  id: aws/acm/certificate
+  name: acm-certificate
+  system: aws
+  version: 1.0.0
+  description: "AWS ACM certificate with DNS validation support"
+  categories:
+    - security
+    - certificates
+    - acm
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "cert" {
+      source                    = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/acm/certificate?ref=v1.0.0"
+      domain_name               = "example.com"
+      subject_alternative_names = ["*.example.com"]
+      zone_id                   = "Z1234567890"
+    }

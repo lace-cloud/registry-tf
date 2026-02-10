@@ -1,0 +1,22 @@
+module:
+  id: aws/vpc/subnet
+  name: vpc-subnet
+  system: aws
+  version: 1.0.0
+  description: "AWS VPC Subnet with configurable availability zone and public IP mapping"
+  categories:
+    - networking
+    - vpc
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "subnet" {
+      source                  = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/vpc/subnet?ref=v1.0.0"
+      vpc_id                  = "vpc-123456"
+      cidr_block              = "10.0.1.0/24"
+      availability_zone       = "us-east-1a"
+      map_public_ip_on_launch = true
+      name                    = "public-subnet-a"
+    }

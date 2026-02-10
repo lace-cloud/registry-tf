@@ -1,0 +1,24 @@
+module:
+  id: aws/vpc/vpc
+  name: vpc
+  system: aws
+  version: 1.0.0
+  description: "AWS VPC with configurable CIDR, DNS support, and DNS hostnames"
+  categories:
+    - networking
+    - vpc
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "vpc" {
+      source               = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/vpc/vpc?ref=v1.0.0"
+      cidr_block           = "10.0.0.0/16"
+      enable_dns_support   = true
+      enable_dns_hostnames = true
+      name                 = "my-vpc"
+      tags = {
+        Environment = "production"
+      }
+    }

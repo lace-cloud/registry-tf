@@ -1,0 +1,26 @@
+module:
+  id: aws/dynamodb/table
+  name: dynamodb-table
+  system: aws
+  version: 1.0.0
+  description: "AWS DynamoDB table with configurable billing, keys, GSIs, TTL, and point-in-time recovery"
+  categories:
+    - database
+    - dynamodb
+    - nosql
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "table" {
+      source       = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/dynamodb/table?ref=v1.0.0"
+      name         = "my-table"
+      billing_mode = "PAY_PER_REQUEST"
+      hash_key     = "pk"
+      range_key    = "sk"
+      attributes = [
+        { name = "pk", type = "S" },
+        { name = "sk", type = "S" }
+      ]
+    }

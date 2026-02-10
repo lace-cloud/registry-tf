@@ -1,0 +1,27 @@
+module:
+  id: aws/rds/instance
+  name: rds-instance
+  system: aws
+  version: 1.0.0
+  description: "AWS RDS database instance with configurable engine, storage, backup, and multi-AZ support"
+  categories:
+    - database
+    - rds
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "db" {
+      source              = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/instance?ref=v1.0.0"
+      identifier          = "my-app-db"
+      engine              = "postgres"
+      engine_version      = "15.4"
+      instance_class      = "db.t3.micro"
+      allocated_storage   = 20
+      db_name             = "myapp"
+      username            = "admin"
+      password            = "changeme"
+      db_subnet_group_name = "my-subnet-group"
+      vpc_security_group_ids = ["sg-123456"]
+    }

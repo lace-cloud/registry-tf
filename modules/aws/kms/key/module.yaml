@@ -1,0 +1,21 @@
+module:
+  id: aws/kms/key
+  name: kms-key
+  system: aws
+  version: 1.0.0
+  description: "AWS KMS key with alias and configurable rotation and key policy"
+  categories:
+    - security
+    - encryption
+    - kms
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "key" {
+      source              = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/kms/key?ref=v1.0.0"
+      description         = "Encryption key for my-app"
+      alias               = "alias/my-app-key"
+      enable_key_rotation = true
+    }

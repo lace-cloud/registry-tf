@@ -1,0 +1,19 @@
+module:
+  id: aws/vpc/internet_gateway
+  name: vpc-internet-gateway
+  system: aws
+  version: 1.0.0
+  description: "AWS VPC Internet Gateway for enabling internet access in public subnets"
+  categories:
+    - networking
+    - vpc
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "igw" {
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/vpc/internet_gateway?ref=v1.0.0"
+      vpc_id = "vpc-123456"
+      name   = "my-igw"
+    }

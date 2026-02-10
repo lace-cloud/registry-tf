@@ -1,0 +1,24 @@
+module:
+  id: aws/sqs/queue
+  name: sqs-queue
+  system: aws
+  version: 1.0.0
+  description: "AWS SQS queue with support for standard and FIFO queues, dead-letter queues, and encryption"
+  categories:
+    - messaging
+    - sqs
+    - async
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "queue" {
+      source                = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/sqs/queue?ref=v1.0.0"
+      name                  = "my-app-queue"
+      visibility_timeout    = 30
+      message_retention     = 345600
+      tags = {
+        Environment = "production"
+      }
+    }

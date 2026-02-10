@@ -1,0 +1,20 @@
+module:
+  id: aws/rds/subnet_group
+  name: rds-subnet-group
+  system: aws
+  version: 1.0.0
+  description: "AWS RDS DB Subnet Group for placing RDS instances in specific subnets"
+  categories:
+    - database
+    - rds
+    - networking
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "db_subnet" {
+      source     = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/subnet_group?ref=v1.0.0"
+      name       = "my-db-subnet-group"
+      subnet_ids = ["subnet-111", "subnet-222"]
+    }

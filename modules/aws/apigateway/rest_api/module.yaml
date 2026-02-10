@@ -1,0 +1,22 @@
+module:
+  id: aws/apigateway/rest_api
+  name: apigateway-rest-api
+  system: aws
+  version: 1.0.0
+  description: "AWS API Gateway REST API with deployment and stage management"
+  categories:
+    - api
+    - apigateway
+    - serverless
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "api" {
+      source        = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/apigateway/rest_api?ref=v1.0.0"
+      name          = "my-api"
+      description   = "My REST API"
+      endpoint_type = "REGIONAL"
+      stage_name    = "prod"
+    }
