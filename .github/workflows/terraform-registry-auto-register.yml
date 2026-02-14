@@ -196,15 +196,6 @@ jobs:
           echo "✅ Security scan complete"
         continue-on-error: true
 
-      - name: Validate organization variable
-        run: |
-          if [ -z "${{ vars.LACE_ORGANIZATION }}" ]; then
-            echo "ERROR: LACE_ORGANIZATION variable not set"
-            echo "Please add LACE_ORGANIZATION to repository variables (Settings > Variables > Actions)"
-            exit 1
-          fi
-          echo "Organization: ${{ vars.LACE_ORGANIZATION }}"
-
       - name: Authenticate with Lace
         env:
           # Use GitHub token for authentication
@@ -237,7 +228,7 @@ jobs:
           # Register module with explicit git context
           lace terraform-registry register \
             --module-path "$MODULE_PATH" \
-            --organization "${{ vars.LACE_ORGANIZATION }}" \
+            --organization "lace" \
             --commit-sha "${{ github.sha }}" \
             --ref "${{ github.ref }}" \
             --actor "${{ github.actor }}"
