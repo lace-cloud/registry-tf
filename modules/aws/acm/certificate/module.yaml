@@ -2,7 +2,7 @@ module:
   id: aws/acm/certificate
   name: acm-certificate
   system: aws
-  version: 1.0.0
+  version: 1.0.1
   description: "AWS ACM certificate with DNS validation support and automatic renewal"
   categories:
     - security

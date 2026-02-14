@@ -228,7 +228,6 @@ jobs:
           # Register module with explicit git context
           lace terraform-registry register \
             --module-path "$MODULE_PATH" \
-            --organization "lace" \
             --commit-sha "${{ github.sha }}" \
             --ref "${{ github.ref }}" \
             --actor "${{ github.actor }}"
