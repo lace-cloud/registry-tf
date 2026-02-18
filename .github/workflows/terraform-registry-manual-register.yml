@@ -98,10 +98,15 @@ jobs:
         run: |
           echo "🔍 Validating Terraform configuration..."
 
-          # Validate Terraform syntax and configuration
-          lace terraform validate --path "${{ inputs.module_path }}"
-
-          echo "✅ Terraform configuration is valid"
+          # Composite modules reference git sources that may not be tagged yet.
+          # Their structure is validated by lace module parse instead.
+          KIND=$(grep "^\s*kind:" "${{ inputs.module_path }}/module.yaml" | head -1 | awk '{print $2}')
+          if [ "$KIND" = "composite" ]; then
+            echo "ℹ️  Composite module — skipping terraform validate (lace module parse handles validation)"
+          else
+            lace terraform validate --path "${{ inputs.module_path }}"
+            echo "✅ Terraform configuration is valid"
+          fi
 
       - name: Terraform Security Scan (Optional)
         run: |
