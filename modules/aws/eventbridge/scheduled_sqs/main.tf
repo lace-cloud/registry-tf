@@ -34,9 +34,9 @@ resource "aws_sqs_queue_policy" "eventbridge_send" {
 module "log_group" {
   source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudwatch/log_group?ref=v1.0.0"
 
-  name               = "/aws/eventbridge/${var.name}"
-  retention_in_days  = var.log_retention_days
-  tags               = var.tags
+  name              = "/aws/eventbridge/${var.name}"
+  retention_in_days = var.log_retention_days
+  tags              = var.tags
 }
 
 module "rule" {
