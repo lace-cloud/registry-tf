@@ -34,8 +34,8 @@ resource "aws_s3_bucket_policy" "oai_access" {
 module "cdn" {
   source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudfront/distribution?ref=v1.0.0"
 
-  origin_domain_name  = module.content_bucket.bucket_regional_domain_name
-  origin_id           = var.bucket_name
+  origin_domain_name     = module.content_bucket.bucket_regional_domain_name
+  origin_id              = var.bucket_name
   origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
 
   default_root_object = var.default_root_object

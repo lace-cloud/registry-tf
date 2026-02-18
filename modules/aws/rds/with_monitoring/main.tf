@@ -10,22 +10,22 @@ module "subnet_group" {
 module "db" {
   source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/instance?ref=v1.0.0"
 
-  identifier             = var.identifier
-  engine                 = var.engine
-  engine_version         = var.engine_version
-  instance_class         = var.instance_class
-  allocated_storage      = var.allocated_storage
-  max_allocated_storage  = var.max_allocated_storage
-  db_name                = var.db_name
-  username               = var.username
-  password               = var.password
-  db_subnet_group_name   = module.subnet_group.subnet_group_name
-  vpc_security_group_ids = var.vpc_security_group_ids
-  multi_az               = var.multi_az
-  deletion_protection    = var.deletion_protection
+  identifier              = var.identifier
+  engine                  = var.engine
+  engine_version          = var.engine_version
+  instance_class          = var.instance_class
+  allocated_storage       = var.allocated_storage
+  max_allocated_storage   = var.max_allocated_storage
+  db_name                 = var.db_name
+  username                = var.username
+  password                = var.password
+  db_subnet_group_name    = module.subnet_group.subnet_group_name
+  vpc_security_group_ids  = var.vpc_security_group_ids
+  multi_az                = var.multi_az
+  deletion_protection     = var.deletion_protection
   backup_retention_period = var.backup_retention_period
-  storage_encrypted      = true
-  tags                   = var.tags
+  storage_encrypted       = true
+  tags                    = var.tags
 
   depends_on = [module.subnet_group]
 }
