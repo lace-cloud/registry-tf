@@ -1,0 +1,31 @@
+module:
+  id: aws/static/s3-cloudfront-website
+  name: s3-cloudfront-website
+  system: aws
+  version: 1.0.0
+  kind: composite
+  description: "Composite module that creates an S3 bucket for static content and a CloudFront distribution in front of it, using an Origin Access Identity to keep the bucket private"
+
+  categories:
+    - storage
+    - cdn
+    - static-website
+    - s3
+    - cloudfront
+
+  authors:
+    - name: "Lace Platform Team"
+      email: "team@lace.cloud"
+
+  example: |
+    module "website" {
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/s3_cloudfront_website?ref=v1.0.0"
+
+      bucket_name          = "my-company-website"
+      default_root_object  = "index.html"
+      price_class          = "PriceClass_100"
+      tags = {
+        Project     = "marketing-site"
+        Environment = "production"
+      }
+    }

@@ -1,0 +1,38 @@
+module:
+  id: aws/database/rds-with-monitoring
+  name: rds-with-monitoring
+  system: aws
+  version: 1.0.0
+  kind: composite
+  description: "Composite module that creates an RDS instance inside a DB subnet group and attaches CloudWatch alarms for CPU utilization and free storage space"
+
+  categories:
+    - database
+    - rds
+    - monitoring
+    - cloudwatch
+
+  authors:
+    - name: "Lace Platform Team"
+      email: "team@lace.cloud"
+
+  example: |
+    module "app_db" {
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/rds_with_monitoring?ref=v1.0.0"
+
+      identifier        = "app-postgres"
+      engine            = "postgres"
+      engine_version    = "15.4"
+      instance_class    = "db.t3.medium"
+      allocated_storage = 20
+      db_name           = "appdb"
+      username          = "dbadmin"
+      password          = var.db_password
+      subnet_ids        = module.vpc.private_subnet_ids
+
+      alarm_actions = ["arn:aws:sns:us-east-1:123456789012:alerts"]
+      tags = {
+        Environment = "production"
+        Team        = "platform"
+      }
+    }
