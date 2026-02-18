@@ -4,6 +4,7 @@ module:
   system: aws
   version: 1.0.0
   kind: composite
+  registry_visibility: public
   description: "Composite module that creates an RDS instance inside a DB subnet group and attaches CloudWatch alarms for CPU utilization and free storage space"
 
   categories:
