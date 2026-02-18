@@ -4,6 +4,7 @@ module:
   system: aws
   version: 1.0.0
   kind: composite
+  registry_visibility: public
   description: "Composite module that creates an S3 bucket for static content and a CloudFront distribution in front of it, using an Origin Access Identity to keep the bucket private"
 
   categories:
