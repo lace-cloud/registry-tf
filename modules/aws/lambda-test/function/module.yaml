@@ -1,0 +1,30 @@
+module:
+  id: aws/lambda-test/function
+  name: lambda-test-function
+  system: aws
+  version: 1.0.0
+  description: "AWS Lambda function with configurable runtime, memory, timeout, VPC, layers, and environment variables"
+  categories:
+    - compute
+    - serverless
+    - lambda
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "lambda" {
+      source        = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/lambda/function?ref=v1.0.0"
+      function_name = "my-api-handler"
+      runtime       = "nodejs20.x"
+      handler       = "index.handler"
+      filename      = "lambda.zip"
+      memory_size   = 256
+      timeout       = 30
+      environment_variables = {
+        TABLE_NAME = "my-table"
+      }
+      tags = {
+        Environment = "production"
+      }
+    }
