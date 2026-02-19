@@ -1,4 +1,4 @@
-variable "name" {
+variable "name_test" {
   description = "The name of the IAM role"
   type        = string
 }
