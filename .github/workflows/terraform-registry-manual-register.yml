@@ -124,25 +124,28 @@ jobs:
 
       - name: Authenticate with Lace
         env:
-          GITHUB_TOKEN: ${{ secrets.LACE_GITHUB_TOKEN }}
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "🔐 Authenticating..."
 
-          if [ -z "$GITHUB_TOKEN" ]; then
-            echo "❌ ERROR: LACE_GITHUB_TOKEN secret not set"
-            echo "Please add LACE_GITHUB_TOKEN to repository secrets"
+          if [ -z "$LACE_API_KEY" ]; then
+            echo "❌ ERROR: LACE_SERVICE_ACCOUNT_KEY secret not set"
+            echo "Please add LACE_SERVICE_ACCOUNT_KEY to repository secrets"
             exit 1
           fi
 
-          lace login --token "$GITHUB_TOKEN"
+          # Verify authentication (LACE_API_KEY is read automatically by the CLI)
           lace whoami
 
       - name: Register module
+        env:
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "📦 Registering module..."
           echo ""
 
           # Register module with explicit git context
+          # No --organization needed: service account is allowed to publish public modules
           lace terraform-registry register \
             --module-path "${{ inputs.module_path }}" \
             --commit-sha "${{ github.sha }}" \
@@ -153,6 +156,8 @@ jobs:
           echo "✅ Module registration complete"
 
       - name: Verify registration
+        env:
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           MODULE_PATH="${{ inputs.module_path }}"
           MODULE_NAME=$(grep -A 1 "^module:" "$MODULE_PATH/module.yaml" | grep "name:" | cut -d':' -f2 | tr -d ' ')
@@ -164,8 +169,8 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          lace logout || true
-          rm -rf ~/.config/lace || true
+          # No credentials file to clean — LACE_API_KEY env var is ephemeral
+          echo "🧹 Done"
 
       - name: Summary
         if: success()

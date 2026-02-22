@@ -203,34 +203,30 @@ jobs:
 
       - name: Authenticate with Lace
         env:
-          # Use GitHub token for authentication
-          # This token should be stored as a repository secret: LACE_GITHUB_TOKEN
-          # It should be a GitHub Personal Access Token with read:user and user:email scopes
-          GITHUB_TOKEN: ${{ secrets.LACE_GITHUB_TOKEN }}
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "🔐 Authenticating with Lace platform..."
 
-          if [ -z "$GITHUB_TOKEN" ]; then
-            echo "❌ ERROR: LACE_GITHUB_TOKEN secret not set"
-            echo "Please add LACE_GITHUB_TOKEN to repository secrets"
+          if [ -z "$LACE_API_KEY" ]; then
+            echo "❌ ERROR: LACE_SERVICE_ACCOUNT_KEY secret not set"
+            echo "Please add LACE_SERVICE_ACCOUNT_KEY to repository secrets"
             exit 1
           fi
 
-          # Authenticate CLI (exchanges GitHub token for Lace API key)
-          lace login --token "$GITHUB_TOKEN"
-
-          # Verify authentication
+          # Verify authentication (LACE_API_KEY is read automatically by the CLI)
           echo "✅ Authentication successful"
           lace whoami
 
       - name: Register module with Lace
         env:
           MODULE_PATH: ${{ matrix.module_path }}
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "📦 Registering module: $MODULE_PATH"
           echo ""
 
           # Register module with explicit git context
+          # No --organization needed: service account is allowed to publish public modules
           lace terraform-registry register \
             --module-path "$MODULE_PATH" \
             --commit-sha "${{ github.sha }}" \
@@ -243,6 +239,7 @@ jobs:
       - name: Verify registration
         env:
           MODULE_PATH: ${{ matrix.module_path }}
+          LACE_API_KEY: ${{ secrets.LACE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "🔍 Verifying module registration..."
 
@@ -260,9 +257,8 @@ jobs:
       - name: Cleanup credentials
         if: always()
         run: |
-          echo "🧹 Cleaning up credentials..."
-          lace logout || true
-          rm -rf ~/.config/lace || true
+          echo "🧹 Cleaning up..."
+          # No credentials file to clean — LACE_API_KEY env var is ephemeral
 
   summary:
     name: Registration Summary
