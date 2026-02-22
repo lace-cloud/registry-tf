@@ -1,4 +1,4 @@
-variable "policy_name" {
+variable "policy_name_test" {
   description = "The name of the IAM policy"
   type        = string
 }

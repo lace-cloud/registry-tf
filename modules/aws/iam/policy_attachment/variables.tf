@@ -1,4 +1,4 @@
-variable "role_name" {
+variable "role_name_test" {
   description = "The name of the IAM role to attach the policy to"
   type        = string
 }
