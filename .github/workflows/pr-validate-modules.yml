@@ -65,17 +65,28 @@ jobs:
 
           # Find unique module directories
           module_dirs=""
+          skipped_files=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             if module_root=$(find_module_root "$file"); then
               module_dirs="$module_dirs$module_root"$'\n'
+            else
+              skipped_files="$skipped_files$file"$'\n'
             fi
           done
+
+          # Fail if any changed files are not part of a module
+          if [ -n "$skipped_files" ]; then
+            echo "::error::Changed files not part of any module (no module.yaml found):"
+            echo "$skipped_files" | sed '/^$/d' | while read -r f; do echo "  - $f"; done
+            echo "Each module directory must contain a module.yaml file."
+            exit 1
+          fi
 
           # Sort unique
           unique_modules=$(echo "$module_dirs" | sort -u | sed '/^$/d')
 
           if [ -z "$unique_modules" ]; then
-            echo "No valid modules found in changed files (module.yaml missing)"
+            echo "No valid modules found in changed files"
             echo "modules_found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -106,6 +117,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate module structure
         run: |
@@ -124,6 +137,64 @@ jobs:
           fi
 
           echo "Module structure is valid"
+
+      - name: Check module_id uniqueness
+        run: |
+          MODULE_PATH="${{ matrix.module_path }}"
+          CURRENT_ID=$(grep "^id:" "$MODULE_PATH/module.yaml" | head -1 | awk '{print $2}')
+
+          if [ -z "$CURRENT_ID" ]; then
+            echo "::error::No 'id' field found in $MODULE_PATH/module.yaml"
+            exit 1
+          fi
+
+          echo "Module id: $CURRENT_ID"
+
+          # Search all module.yaml files for the same id
+          DUPLICATES=""
+          while IFS= read -r yaml_file; do
+            yaml_dir=$(dirname "$yaml_file")
+            if [ "$yaml_dir" = "$MODULE_PATH" ]; then
+              continue
+            fi
+            FILE_ID=$(grep "^id:" "$yaml_file" | head -1 | awk '{print $2}')
+            if [ "$FILE_ID" = "$CURRENT_ID" ]; then
+              DUPLICATES="$DUPLICATES$yaml_dir"$'\n'
+            fi
+          done < <(find modules -name "module.yaml" -type f)
+
+          if [ -n "$DUPLICATES" ]; then
+            echo "::error::Duplicate module_id '$CURRENT_ID' found in other modules:"
+            echo "$DUPLICATES" | sed '/^$/d' | while read -r d; do echo "  - $d"; done
+            echo "Each module must have a unique id."
+            exit 1
+          fi
+
+          echo "Module id is unique"
+
+      - name: Check version bump
+        run: |
+          MODULE_PATH="${{ matrix.module_path }}"
+          CURRENT_VERSION=$(grep "^version:" "$MODULE_PATH/module.yaml" | head -1 | awk '{print $2}')
+
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "::error::No 'version' field found in $MODULE_PATH/module.yaml"
+            exit 1
+          fi
+
+          echo "Current version: $CURRENT_VERSION"
+
+          # Fetch the base branch version
+          BASE_VERSION=$(git show origin/${{ github.event.pull_request.base.ref }}:"$MODULE_PATH/module.yaml" 2>/dev/null | grep "^version:" | head -1 | awk '{print $2}' || echo "")
+
+          if [ -z "$BASE_VERSION" ]; then
+            echo "New module (not on base branch) — skipping version bump check"
+          elif [ "$CURRENT_VERSION" = "$BASE_VERSION" ]; then
+            echo "::error::Module version not bumped. Current: $CURRENT_VERSION. Please update the version in $MODULE_PATH/module.yaml."
+            exit 1
+          else
+            echo "Version bumped: $BASE_VERSION -> $CURRENT_VERSION"
+          fi
 
       - name: Install Lace CLI
         run: |

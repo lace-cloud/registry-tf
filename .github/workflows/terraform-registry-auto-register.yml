@@ -66,11 +66,20 @@ jobs:
 
           # Find unique module directories
           module_dirs=""
+          skipped_files=""
           for file in $changed_files; do
             if module_root=$(find_module_root "$file"); then
               module_dirs="$module_dirs$module_root"$'\n'
+            else
+              skipped_files="$skipped_files$file"$'\n'
             fi
           done
+
+          # Warn about files not part of any module
+          if [ -n "$skipped_files" ]; then
+            echo "::warning::Changed files not part of any module (no module.yaml found):"
+            echo "$skipped_files" | sed '/^$/d' | while read -r f; do echo "  - $f"; done
+          fi
 
           # Sort unique
           unique_modules=$(echo "$module_dirs" | sort -u | sed '/^$/d')
