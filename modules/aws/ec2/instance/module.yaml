@@ -2,7 +2,7 @@ module:
   id: aws/ec2/instance
   name: ec2-instance
   system: aws
-  version: 1.0.0
+  version: 1.0.1
   description: "AWS EC2 instance with configurable AMI, instance type, networking, and storage"
   categories:
     - compute
