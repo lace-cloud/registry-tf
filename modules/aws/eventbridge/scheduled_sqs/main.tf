@@ -1,10 +1,10 @@
 module "event_queue" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/sqs/queue?ref=v1.0.0"
+  source = "../../sqs/queue"
 
-  name                       = "${var.name}-queue"
-  visibility_timeout_seconds = var.visibility_timeout
-  message_retention_seconds  = var.message_retention_seconds
-  tags                       = var.tags
+  name               = "${var.name}-queue"
+  visibility_timeout = var.visibility_timeout
+  message_retention  = var.message_retention_seconds
+  tags               = var.tags
 }
 
 resource "aws_sqs_queue_policy" "eventbridge_send" {
@@ -32,7 +32,7 @@ resource "aws_sqs_queue_policy" "eventbridge_send" {
 }
 
 module "log_group" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudwatch/log_group?ref=v1.0.0"
+  source = "../../cloudwatch/log_group"
 
   name              = "/aws/eventbridge/${var.name}"
   retention_in_days = var.log_retention_days
@@ -40,7 +40,7 @@ module "log_group" {
 }
 
 module "rule" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/eventbridge/rule?ref=v1.0.0"
+  source = "../rule"
 
   name                = "${var.name}-rule"
   description         = var.rule_description != "" ? var.rule_description : "EventBridge rule for ${var.name}"
@@ -53,6 +53,4 @@ module "rule" {
     }
   ]
   tags = var.tags
-
-  depends_on = [aws_sqs_queue_policy.eventbridge_send]
 }

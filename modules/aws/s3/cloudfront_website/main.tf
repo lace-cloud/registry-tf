@@ -3,7 +3,7 @@ resource "aws_cloudfront_origin_access_identity" "this" {
 }
 
 module "content_bucket" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/s3/bucket?ref=v1.0.0"
+  source = "../bucket"
 
   bucket_name         = var.bucket_name
   enable_versioning   = var.enable_versioning
@@ -32,7 +32,7 @@ resource "aws_s3_bucket_policy" "oai_access" {
 }
 
 module "cdn" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudfront/distribution?ref=v1.0.0"
+  source = "../../cloudfront/distribution"
 
   origin_domain_name     = module.content_bucket.bucket_regional_domain_name
   origin_id              = var.bucket_name

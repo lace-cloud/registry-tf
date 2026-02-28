@@ -10,13 +10,10 @@ resource "aws_sqs_queue" "this" {
   kms_master_key_id           = var.kms_key_id
   sqs_managed_sse_enabled     = var.kms_key_id == null ? true : null
 
-  dynamic "redrive_policy" {
-    for_each = var.dead_letter_queue_arn != null ? [1] : []
-    content {
-      dead_letter_target_arn = var.dead_letter_queue_arn
-      max_receive_count      = var.max_receive_count
-    }
-  }
+  redrive_policy = var.dead_letter_queue_arn != null ? jsonencode({
+    deadLetterTargetArn = var.dead_letter_queue_arn
+    maxReceiveCount     = var.max_receive_count
+  }) : null
 
   tags = merge(
     {

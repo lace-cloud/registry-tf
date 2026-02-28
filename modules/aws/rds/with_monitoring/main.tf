@@ -1,5 +1,5 @@
 module "subnet_group" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/subnet_group?ref=v1.0.0"
+  source = "../subnet_group"
 
   name        = "${var.identifier}-subnet-group"
   description = "Subnet group for ${var.identifier}"
@@ -8,7 +8,7 @@ module "subnet_group" {
 }
 
 module "db" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/instance?ref=v1.0.0"
+  source = "../instance"
 
   identifier              = var.identifier
   engine                  = var.engine
@@ -31,7 +31,7 @@ module "db" {
 }
 
 module "cpu_alarm" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudwatch/metric_alarm?ref=v1.0.0"
+  source = "../../cloudwatch/metric_alarm"
 
   alarm_name          = "${var.identifier}-high-cpu"
   alarm_description   = "CPU utilization above ${var.cpu_alarm_threshold}% for ${var.identifier}"
@@ -49,7 +49,7 @@ module "cpu_alarm" {
 }
 
 module "storage_alarm" {
-  source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/cloudwatch/metric_alarm?ref=v1.0.0"
+  source = "../../cloudwatch/metric_alarm"
 
   alarm_name          = "${var.identifier}-low-storage"
   alarm_description   = "Free storage below ${var.storage_alarm_threshold_gb}GB for ${var.identifier}"
