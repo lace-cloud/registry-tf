@@ -3,7 +3,6 @@ module:
   name: s3-cloudfront-website
   system: aws
   version: 1.0.0
-  kind: composite
   registry_visibility: public
   description: "Composite module that creates an S3 bucket for static content and a CloudFront distribution in front of it, using an Origin Access Identity to keep the bucket private"
 
@@ -20,7 +19,7 @@ module:
 
   example: |
     module "website" {
-      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/s3_cloudfront_website?ref=v1.0.0"
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/s3/cloudfront_website?ref=v1.0.0"
 
       bucket_name          = "my-company-website"
       default_root_object  = "index.html"

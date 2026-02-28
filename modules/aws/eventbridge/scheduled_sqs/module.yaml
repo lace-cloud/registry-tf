@@ -3,7 +3,6 @@ module:
   name: eventbridge-scheduled-sqs
   system: aws
   version: 1.0.0
-  kind: composite
   registry_visibility: public
   description: "Composite module that creates an EventBridge rule (schedule or event pattern), an SQS queue as the target, and a CloudWatch log group for observability. Includes the SQS resource policy required for EventBridge delivery."
 
@@ -22,7 +21,7 @@ module:
   example: |
     # Scheduled rule — runs every 5 minutes
     module "heartbeat_queue" {
-      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/eventbridge_scheduled_sqs?ref=v1.0.0"
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/eventbridge/scheduled_sqs?ref=v1.0.0"
 
       name                = "heartbeat"
       schedule_expression = "rate(5 minutes)"
@@ -34,7 +33,7 @@ module:
 
     # Event pattern rule — captures all S3 PutObject events
     module "s3_events_queue" {
-      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/eventbridge_scheduled_sqs?ref=v1.0.0"
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/eventbridge/scheduled_sqs?ref=v1.0.0"
 
       name = "s3-put-events"
       event_pattern = jsonencode({

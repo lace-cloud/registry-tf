@@ -3,6 +3,7 @@ module:
   name: s3-bucket
   system: aws
   version: 1.0.0
+  registry_visibility: public
   description: "Production-ready S3 bucket with encryption, versioning, and lifecycle policies"
 
   categories:

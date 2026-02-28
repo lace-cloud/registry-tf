@@ -3,6 +3,7 @@ module:
   name: sns-topic
   system: aws
   version: 1.0.0
+  registry_visibility: public
   description: "Production-ready AWS SNS topic with subscription management and encryption support"
 
   categories:

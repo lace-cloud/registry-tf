@@ -3,6 +3,7 @@ module:
   name: iam-role
   system: aws
   version: 1.0.0
+  registry_visibility: public
   description: "AWS IAM role with configurable assume role policy and tags"
 
   categories:

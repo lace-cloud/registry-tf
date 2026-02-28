@@ -3,6 +3,7 @@ module:
   name: iam-policy-attachment
   system: aws
   version: 1.0.0
+  registry_visibility: public
   description: "AWS IAM role policy attachment for connecting policies to roles"
 
   categories:

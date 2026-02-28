@@ -3,7 +3,6 @@ module:
   name: rds-with-monitoring
   system: aws
   version: 1.0.0
-  kind: composite
   registry_visibility: public
   description: "Composite module that creates an RDS instance inside a DB subnet group and attaches CloudWatch alarms for CPU utilization and free storage space"
 
@@ -19,7 +18,7 @@ module:
 
   example: |
     module "app_db" {
-      source  = "git::https://github.com/lace-cloud/registry-tf.git//composites/rds_with_monitoring?ref=v1.0.0"
+      source  = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/rds/with_monitoring?ref=v1.0.0"
 
       identifier        = "app-postgres"
       engine            = "postgres"

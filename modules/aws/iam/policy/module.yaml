@@ -3,6 +3,7 @@ module:
   name: iam-policy
   system: aws
   version: 1.0.0
+  registry_visibility: public
   description: "AWS IAM policy with configurable policy document and tags"
 
   categories:

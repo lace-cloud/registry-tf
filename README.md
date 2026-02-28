@@ -22,11 +22,12 @@ registry-tf/
         └── pr-validate-modules.yml               # Validates on PRs
 ```
 
-## Module Types
+## Module Structure
 
-### Leaf Modules (`kind: leaf`)
+Every module requires:
 
-Atomic modules that manage a single AWS resource or closely related set of resources. These are the building blocks.
+- `module.yaml` — module metadata
+- `main.tf` — Terraform resources
 
 ```
 modules/aws/s3/bucket/
@@ -34,19 +35,11 @@ modules/aws/sqs/queue/
 modules/aws/cloudwatch/log_group/
 ```
 
-### Composite Modules (`kind: composite`)
-
-Modules that compose multiple leaf modules into a ready-to-use pattern. They reference leaf modules via git source URLs.
-
-```
-modules/aws/s3/cloudfront_website/    # S3 + CloudFront + OAI
-modules/aws/rds/with_monitoring/      # RDS + subnet group + CloudWatch alarms
-modules/aws/eventbridge/scheduled_sqs/ # EventBridge rule + SQS + log group
-```
+`variables.tf`, `outputs.tf`, and `versions.tf` are optional but recommended for better module discoverability.
 
 ## module.yaml Reference
 
-Every module requires a `module.yaml` file. The `kind` and `registry_visibility` fields are critical to get right.
+Every module requires a `module.yaml` file. The `registry_visibility` field is critical to get right.
 
 ```yaml
 module:
@@ -54,7 +47,6 @@ module:
   name: module-name                      # Required: kebab-case name
   system: aws                            # Required: aws | gcp | azure
   version: 1.0.0                         # Required: semantic version
-  kind: leaf                             # Required: leaf | composite
   registry_visibility: public            # Required for Lace public registry
   description: "What this module does"   # Required
 
@@ -77,10 +69,9 @@ module:
 | Field | Value | Why it matters |
 |---|---|---|
 | `registry_visibility` | `public` | **Required** for the Lace public registry. Omitting it defaults to `private`, which requires `--organization` at registration time and will fail in CI. |
-| `kind` | `leaf` or `composite` | Controls CI validation. Composites skip `terraform validate` (leaf modules are validated normally). |
 | `id` | `aws/service/name` | Must be unique across the registry. |
 
-## Adding a Leaf Module
+## Adding an Atomic Module
 
 1. Create the directory: `modules/aws/<service>/<name>/`
 
@@ -93,7 +84,6 @@ module:
      name: my-bucket
      system: aws
      version: 1.0.0
-     kind: leaf
      registry_visibility: public
      description: "..."
    ```
@@ -124,49 +114,18 @@ module:
 
 5. After merging to `main`, the auto-register workflow registers it automatically.
 
-## Adding a Composite Module
-
-Composites reference leaf modules via git source URLs. Because those URLs require a git tag to initialize (`?ref=v1.0.0`), **`terraform validate` is intentionally skipped** for composites in CI — `lace module parse` handles structural validation instead.
-
-1. Create the directory: `modules/aws/<service>/<name>/`
-
-2. **`module.yaml`** — set `kind: composite`:
-   ```yaml
-   module:
-     id: aws/service/my-composite
-     name: my-composite
-     system: aws
-     version: 1.0.0
-     kind: composite                  # <-- triggers composite CI path
-     registry_visibility: public      # <-- required for public registry
-     description: "..."
-   ```
-
-3. **`main.tf`** — reference leaf modules by git source:
-   ```hcl
-   module "queue" {
-     source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/sqs/queue?ref=v1.0.0"
-     name   = var.name
-     tags   = var.tags
-   }
-   ```
-
-4. Open a PR targeting `develop`. CI skips `terraform validate` and runs `lace module parse` for structural validation.
-
-5. After merging to `main`, the auto-register workflow registers it automatically.
-
 ## CI Workflows
 
 ### PR Validation (`pr-validate-modules.yml`)
 
 Runs on every PR touching `modules/**`:
 
-| Step | Leaf | Composite |
-|---|---|---|
-| Terraform fmt check | ✅ | ✅ |
-| Terraform validate | ✅ | ⏭ skipped |
-| lace module parse | ✅ | ✅ |
-| Security scan (tfsec) | ✅ soft-fail | ✅ soft-fail |
+| Step | |
+|---|---|
+| Terraform fmt check | ✅ |
+| Terraform validate | ✅ |
+| lace module parse | ✅ |
+| Security scan (tfsec) | ✅ soft-fail |
 
 ### Auto Registration (`terraform-registry-auto-register.yml`)
 
@@ -190,7 +149,7 @@ module:
 
 ### `terraform validate` fails with `ref=v1.0.0 not found`
 
-This is expected for **composite** modules before the repo has been tagged. The CI workflow skips `terraform validate` for composites (checks `kind:` in `module.yaml`). If you see this error in CI, verify your `module.yaml` has `kind: composite`.
+This occurs when a module references git sources that haven't been tagged yet. Use a commit SHA instead of a version tag for development, or ensure the referenced modules have valid tags.
 
 ### `module.yaml not found` or `main.tf is required`
 
