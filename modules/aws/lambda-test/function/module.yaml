@@ -2,7 +2,7 @@ module:
   id: aws/lambda-test/function
   name: lambda-test-function
   system: aws
-  version: 1.0.0
+  version: 1.0.1
   description: "AWS Lambda function with configurable runtime, memory, timeout, VPC, layers, and environment variables"
   categories:
     - compute
@@ -11,7 +11,7 @@ module:
   authors:
     - name: "Lace Team"
       email: "team@lace.cloud"
-  registry_visibility: public
+  registry_visibility: private
   example: |
     module "lambda" {
       source        = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/lambda/function?ref=v1.0.0"
