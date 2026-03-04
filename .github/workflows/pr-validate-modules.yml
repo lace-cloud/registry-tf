@@ -1,15 +1,12 @@
 name: PR Validate Modules
 
-# Validates Terraform modules on PRs targeting develop
+# Validates Terraform modules on PRs targeting develop/main
 # No authentication needed — all validation is local/read-only
 
 on:
   pull_request:
-    branches:
-      - develop
-      - main
-    paths:
-      - 'modules/**'
+    branches: [develop, main]
+    paths: ['modules/**']
 
 concurrency:
   group: pr-validate-${{ github.event.pull_request.number }}
@@ -22,6 +19,10 @@ jobs:
   detect-changed-modules:
     name: Detect Changed Modules
     runs-on: ubuntu-latest
+
+    outputs:
+      modules_json: ${{ steps.find-modules.outputs.modules_json }}
+      modules_found: ${{ steps.find-modules.outputs.modules_found }}
 
     steps:
       - name: Checkout repository
@@ -45,48 +46,38 @@ jobs:
           echo "Changed files:"
           echo "${{ steps.changed-files.outputs.all_changed_files }}"
 
-          # Function to find module root (directory containing module.yaml)
+          # Walk up from a file path to find the nearest directory containing module.yaml
           find_module_root() {
-            local path="$1"
-            local dir=$(dirname "$path")
-
+            local dir
+            dir=$(dirname "$1")
             while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
-              if [ -f "$dir/module.yaml" ]; then
-                echo "$dir"
-                return 0
-              fi
-              if [ "$dir" == "modules" ]; then
-                return 1
-              fi
+              [ -f "$dir/module.yaml" ] && { echo "$dir"; return 0; }
+              [ "$dir" = "modules" ] && return 1
               dir=$(dirname "$dir")
             done
             return 1
           }
 
-          # Find unique module directories
           module_dirs=""
-          skipped_files=""
+          orphan_files=""
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             if module_root=$(find_module_root "$file"); then
               module_dirs="$module_dirs$module_root"$'\n'
             else
-              skipped_files="$skipped_files$file"$'\n'
+              orphan_files="$orphan_files  - $file"$'\n'
             fi
           done
 
-          # Fail if any changed files are not part of a module
-          if [ -n "$skipped_files" ]; then
-            echo "::error::Changed files not part of any module (no module.yaml found):"
-            echo "$skipped_files" | sed '/^$/d' | while read -r f; do echo "  - $f"; done
-            echo "Each module directory must contain a module.yaml file."
+          # Fail if any changed files live outside a module directory
+          if [ -n "$orphan_files" ]; then
+            echo "::error::Files changed outside any module (no module.yaml found in parent directories):"
+            echo "$orphan_files"
             exit 1
           fi
 
-          # Sort unique
           unique_modules=$(echo "$module_dirs" | sort -u | sed '/^$/d')
 
           if [ -z "$unique_modules" ]; then
-            echo "No valid modules found in changed files"
             echo "modules_found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -94,14 +85,9 @@ jobs:
           echo "Changed modules:"
           echo "$unique_modules"
 
-          # Convert to JSON array for matrix strategy
           modules_json=$(echo "$unique_modules" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "modules_json=$modules_json" >> $GITHUB_OUTPUT
           echo "modules_found=true" >> $GITHUB_OUTPUT
-
-    outputs:
-      modules_json: ${{ steps.find-modules.outputs.modules_json }}
-      modules_found: ${{ steps.find-modules.outputs.modules_found }}
 
   validate-module:
     name: Validate Module
@@ -114,86 +100,95 @@ jobs:
         module_path: ${{ fromJson(needs.detect-changed-modules.outputs.modules_json) }}
       fail-fast: false
 
+    env:
+      MODULE_PATH: ${{ matrix.module_path }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Validate module structure
+      - name: Validate module structure and metadata
+        id: meta
         run: |
-          MODULE_PATH="${{ matrix.module_path }}"
+          errors=()
 
-          echo "Validating module structure at: $MODULE_PATH"
+          # Required files
+          [ ! -f "$MODULE_PATH/module.yaml" ] && errors+=("module.yaml not found in $MODULE_PATH")
+          [ ! -f "$MODULE_PATH/main.tf" ] && errors+=("main.tf not found in $MODULE_PATH")
 
-          if [ ! -f "$MODULE_PATH/module.yaml" ]; then
-            echo "ERROR: module.yaml not found in $MODULE_PATH"
+          if [ ${#errors[@]} -gt 0 ]; then
+            printf '::error::%s\n' "${errors[@]}"
             exit 1
           fi
 
-          if [ ! -f "$MODULE_PATH/main.tf" ]; then
-            echo "ERROR: main.tf not found in $MODULE_PATH"
+          # Extract fields (awk finds first matching line, prints value)
+          field() { awk "/$1:/"' {print $2; exit}' "$MODULE_PATH/module.yaml"; }
+
+          ID=$(field "id")
+          NAME=$(field "name")
+          VERSION=$(field "version")
+          VISIBILITY=$(field "registry_visibility")
+
+          # Required fields
+          [ -z "$ID" ] && errors+=("Missing required field: id")
+          [ -z "$NAME" ] && errors+=("Missing required field: name")
+          [ -z "$VERSION" ] && errors+=("Missing required field: version")
+          [ -z "$VISIBILITY" ] && errors+=("Missing required field: registry_visibility")
+
+          # Visibility must be public (this is the public registry)
+          [ -n "$VISIBILITY" ] && [ "$VISIBILITY" != "public" ] && \
+            errors+=("registry_visibility must be 'public', got '$VISIBILITY'")
+
+          if [ ${#errors[@]} -gt 0 ]; then
+            printf '::error::%s\n' "${errors[@]}"
             exit 1
           fi
 
-          echo "Module structure is valid"
+          echo "module_id=$ID" >> $GITHUB_OUTPUT
+          echo "module_name=$NAME" >> $GITHUB_OUTPUT
+          echo "module_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Valid: id=$ID name=$NAME version=$VERSION visibility=$VISIBILITY"
 
-      - name: Check module_id uniqueness
+      - name: Check uniqueness
         run: |
-          MODULE_PATH="${{ matrix.module_path }}"
-          CURRENT_ID=$(grep "^id:" "$MODULE_PATH/module.yaml" | head -1 | awk '{print $2}')
+          ID="${{ steps.meta.outputs.module_id }}"
+          NAME="${{ steps.meta.outputs.module_name }}"
+          errors=()
 
-          if [ -z "$CURRENT_ID" ]; then
-            echo "::error::No 'id' field found in $MODULE_PATH/module.yaml"
-            exit 1
-          fi
-
-          echo "Module id: $CURRENT_ID"
-
-          # Search all module.yaml files for the same id
-          DUPLICATES=""
           while IFS= read -r yaml_file; do
-            yaml_dir=$(dirname "$yaml_file")
-            if [ "$yaml_dir" = "$MODULE_PATH" ]; then
-              continue
-            fi
-            FILE_ID=$(grep "^id:" "$yaml_file" | head -1 | awk '{print $2}')
-            if [ "$FILE_ID" = "$CURRENT_ID" ]; then
-              DUPLICATES="$DUPLICATES$yaml_dir"$'\n'
-            fi
+            dir=$(dirname "$yaml_file")
+            [ "$dir" = "$MODULE_PATH" ] && continue
+
+            file_id=$(awk '/id:/ {print $2; exit}' "$yaml_file")
+            file_name=$(awk '/name:/ {print $2; exit}' "$yaml_file")
+
+            [ "$file_id" = "$ID" ] && errors+=("Duplicate id '$ID' in $dir")
+            [ "$file_name" = "$NAME" ] && errors+=("Duplicate name '$NAME' in $dir")
           done < <(find modules -name "module.yaml" -type f)
 
-          if [ -n "$DUPLICATES" ]; then
-            echo "::error::Duplicate module_id '$CURRENT_ID' found in other modules:"
-            echo "$DUPLICATES" | sed '/^$/d' | while read -r d; do echo "  - $d"; done
-            echo "Each module must have a unique id."
+          if [ ${#errors[@]} -gt 0 ]; then
+            printf '::error::%s\n' "${errors[@]}"
             exit 1
           fi
 
-          echo "Module id is unique"
+          echo "Module id and name are unique"
 
       - name: Check version bump
         run: |
-          MODULE_PATH="${{ matrix.module_path }}"
-          CURRENT_VERSION=$(grep "^version:" "$MODULE_PATH/module.yaml" | head -1 | awk '{print $2}')
+          VERSION="${{ steps.meta.outputs.module_version }}"
 
-          if [ -z "$CURRENT_VERSION" ]; then
-            echo "::error::No 'version' field found in $MODULE_PATH/module.yaml"
-            exit 1
-          fi
-
-          echo "Current version: $CURRENT_VERSION"
-
-          # Fetch the base branch version
-          BASE_VERSION=$(git show origin/${{ github.event.pull_request.base.ref }}:"$MODULE_PATH/module.yaml" 2>/dev/null | grep "^version:" | head -1 | awk '{print $2}' || echo "")
+          BASE_VERSION=$(git show "origin/${{ github.event.pull_request.base.ref }}:$MODULE_PATH/module.yaml" 2>/dev/null \
+            | awk '/version:/ {print $2; exit}' || true)
 
           if [ -z "$BASE_VERSION" ]; then
-            echo "New module (not on base branch) — skipping version bump check"
-          elif [ "$CURRENT_VERSION" = "$BASE_VERSION" ]; then
-            echo "::error::Module version not bumped. Current: $CURRENT_VERSION. Please update the version in $MODULE_PATH/module.yaml."
+            echo "New module — skipping version bump check"
+          elif [ "$VERSION" = "$BASE_VERSION" ]; then
+            echo "::error::Version not bumped (still $VERSION). Update version in module.yaml."
             exit 1
           else
-            echo "Version bumped: $BASE_VERSION -> $CURRENT_VERSION"
+            echo "Version: $BASE_VERSION -> $VERSION"
           fi
 
       - name: Install Lace CLI
@@ -209,36 +204,17 @@ jobs:
           terraform_version: 1.6.6
 
       - name: Terraform Format Check
-        env:
-          MODULE_PATH: ${{ matrix.module_path }}
-        run: |
-          echo "Checking Terraform formatting..."
-          lace terraform fmt --check --path "$MODULE_PATH"
-          echo "Terraform files are properly formatted"
+        run: lace terraform fmt --check --path "$MODULE_PATH"
 
       - name: Terraform Validate
-        env:
-          MODULE_PATH: ${{ matrix.module_path }}
-        run: |
-          echo "Validating Terraform configuration..."
-          lace terraform validate --path "$MODULE_PATH"
-          echo "Terraform configuration is valid"
+        run: lace terraform validate --path "$MODULE_PATH"
 
-      - name: Terraform Security Scan (Informational)
-        env:
-          MODULE_PATH: ${{ matrix.module_path }}
-        run: |
-          echo "Running security scan..."
-          lace terraform scan --path "$MODULE_PATH" --soft-fail || echo "Security scan completed with warnings"
+      - name: Terraform Security Scan
+        run: lace terraform scan --path "$MODULE_PATH" --soft-fail || true
         continue-on-error: true
 
       - name: Parse Module
-        env:
-          MODULE_PATH: ${{ matrix.module_path }}
-        run: |
-          echo "Parsing module definition..."
-          lace module parse --path "$MODULE_PATH"
-          echo "Module parsed successfully"
+        run: lace module parse --path "$MODULE_PATH"
 
   validation-summary:
     name: Validation Summary
@@ -252,19 +228,19 @@ jobs:
           echo "# Terraform Module Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ needs.detect-changed-modules.outputs.modules_found }}" == "true" ]; then
-            echo "## Modules Validated" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo '${{ needs.detect-changed-modules.outputs.modules_json }}' | jq -r '.[] | "- `" + . + "`"' >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-
-            if [ "${{ needs.validate-module.result }}" == "success" ]; then
-              echo "**Result:** All modules passed validation" >> $GITHUB_STEP_SUMMARY
-            elif [ "${{ needs.validate-module.result }}" == "failure" ]; then
-              echo "**Result:** One or more modules failed validation" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "**Result:** Validation status: ${{ needs.validate-module.result }}" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
+          if [ "${{ needs.detect-changed-modules.outputs.modules_found }}" != "true" ]; then
             echo "No module changes detected in this PR." >> $GITHUB_STEP_SUMMARY
+            exit 0
           fi
+
+          echo "## Modules Validated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '${{ needs.detect-changed-modules.outputs.modules_json }}' | jq -r '.[] | "- `" + . + "`"' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          RESULT="${{ needs.validate-module.result }}"
+          case "$RESULT" in
+            success) echo "**Result:** All modules passed validation" >> $GITHUB_STEP_SUMMARY ;;
+            failure) echo "**Result:** One or more modules failed validation" >> $GITHUB_STEP_SUMMARY ;;
+            *)       echo "**Result:** $RESULT" >> $GITHUB_STEP_SUMMARY ;;
+          esac
