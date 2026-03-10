@@ -112,6 +112,10 @@ jobs:
           [ -f "$MODULE/module.yaml" ] || { echo "::error::module.yaml missing"; exit 1; }
           [ -f "$MODULE/main.tf" ]     || { echo "::error::main.tf missing"; exit 1; }
 
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
       - name: Install Lace CLI
         run: |
           wget -q https://releases.lace.cloud/lace-cli-linux-amd64 -O lace
