@@ -162,10 +162,10 @@ jobs:
           fi
 
           echo "## Modules" >> $GITHUB_STEP_SUMMARY
-          echo '${{ needs.prepare.outputs.modules_json }}' | jq -r '.[] | "- \`" + . + "\`"' >> $GITHUB_STEP_SUMMARY
+          echo '${{ needs.prepare.outputs.modules_json }}' | jq -r '.[] | "- `" + . + "`"' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          echo "Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.register.result }}" = "success" ]; then
