@@ -208,7 +208,7 @@ jobs:
           fi
 
           echo "## Modules" >> $GITHUB_STEP_SUMMARY
-          echo '${{ needs.detect-changed-modules.outputs.modules_json }}' | jq -r '.[] | "- \`" + . + "\`"' >> $GITHUB_STEP_SUMMARY
+          echo '${{ needs.detect-changed-modules.outputs.modules_json }}' | jq -r '.[] | "- `" + . + "`"' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if [ "${{ needs.validate.result }}" = "success" ]; then
