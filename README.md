@@ -17,9 +17,8 @@ registry-tf/
 │               └── versions.tf
 └── .github/
     └── workflows/
-        ├── terraform-registry-auto-register.yml  # Auto-registers on push to main
-        ├── terraform-registry-manual-register.yml # Manual trigger
-        └── pr-validate-modules.yml               # Validates on PRs
+        ├── validate.yml   # PR quality gate
+        └── publish.yml    # Auto-registers on merge to main
 ```
 
 ## Module Structure
@@ -31,15 +30,13 @@ Every module requires:
 
 ```
 modules/aws/s3/bucket/
-modules/aws/sqs/queue/
+modules/aws/iam/role/
 modules/aws/cloudwatch/log_group/
 ```
 
-`variables.tf`, `outputs.tf`, and `versions.tf` are optional but recommended for better module discoverability.
+`variables.tf`, `outputs.tf`, and `versions.tf` are optional but recommended.
 
 ## module.yaml Reference
-
-Every module requires a `module.yaml` file. The `registry_visibility` field is critical to get right.
 
 ```yaml
 module:
@@ -47,7 +44,7 @@ module:
   name: module-name                      # Required: kebab-case name
   system: aws                            # Required: aws | gcp | azure
   version: 1.0.0                         # Required: semantic version
-  registry_visibility: public            # Required for Lace public registry
+  registry_visibility: public            # Required for public registry
   description: "What this module does"   # Required
 
   categories:
@@ -57,9 +54,9 @@ module:
     - name: "Lace Platform Team"
       email: "team@lace.cloud"
 
-  example: |                             # Optional but strongly recommended
+  example: |                             # Optional but recommended
     module "example" {
-      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/s3/bucket?ref=v1.0.0"
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/s3/bucket?ref=<sha>"
       bucket_name = "my-bucket"
     }
 ```
@@ -68,20 +65,26 @@ module:
 
 | Field | Value | Why it matters |
 |---|---|---|
-| `registry_visibility` | `public` | **Required** for the Lace public registry. Omitting it defaults to `private`, which requires `--organization` at registration time and will fail in CI. |
+| `registry_visibility` | `public` | Required. Omitting defaults to `private`, which fails in CI. |
 | `id` | `aws/service/name` | Must be unique across the registry. |
 
-## Adding an Atomic Module
+## Contributing a Module
 
-1. Create the directory: `modules/aws/<service>/<name>/`
+1. Create a branch from `develop`:
+   ```bash
+   git checkout develop && git pull
+   git checkout -b feature/aws-<service>-<name>
+   ```
 
-2. Add the required files:
+2. Create the module directory: `modules/aws/<service>/<name>/`
+
+3. Add required files:
 
    **`module.yaml`**
    ```yaml
    module:
-     id: aws/storage/my-bucket
-     name: my-bucket
+     id: aws/<service>/<name>
+     name: <name>
      system: aws
      version: 1.0.0
      registry_visibility: public
@@ -90,7 +93,7 @@ module:
 
    **`main.tf`** — your Terraform resources
 
-   **`versions.tf`**
+   **`versions.tf`** (recommended)
    ```hcl
    terraform {
      required_version = ">= 1.3"
@@ -103,58 +106,66 @@ module:
    }
    ```
 
-3. Validate locally:
+4. Validate locally:
    ```bash
    cd modules/aws/<service>/<name>
-   terraform init && terraform validate
+   terraform init -backend=false && terraform validate
    terraform fmt -check
    ```
 
-4. Open a PR targeting `develop`. CI will run format check, validate, and parse.
+5. Open a PR to `develop`. CI runs `validate.yml`:
+   - Structure check (module.yaml + main.tf exist)
+   - Field validation (id, name, system, version, registry_visibility)
+   - Module ID uniqueness
+   - Version bump check (vs base branch)
+   - `terraform fmt -check`
+   - `terraform init && terraform validate`
+   - `lace module parse`
 
-5. After merging to `main`, the auto-register workflow registers it automatically.
+6. Merge to `develop`, then PR `develop` to `main`.
+
+7. On merge to `main`, `publish.yml` auto-registers the module in the Lace registry.
 
 ## CI Workflows
 
-### PR Validation (`pr-validate-modules.yml`)
+### PR Validation (`validate.yml`)
 
-Runs on every PR touching `modules/**`:
+Runs on PRs targeting `develop` or `main` that touch `modules/**`.
+Detects changed module directories and validates each one in parallel.
 
-| Step | |
+| Check | Blocks PR |
 |---|---|
-| Terraform fmt check | ✅ |
-| Terraform validate | ✅ |
-| lace module parse | ✅ |
-| Security scan (tfsec) | ✅ soft-fail |
+| Structure (module.yaml + main.tf) | Yes |
+| module.yaml required fields | Yes |
+| Module ID uniqueness | Yes |
+| Version bump vs base branch | Yes |
+| `terraform fmt -check` | Yes |
+| `terraform validate` | Yes |
+| `lace module parse` | Yes |
 
-### Auto Registration (`terraform-registry-auto-register.yml`)
+### Auto Publish (`publish.yml`)
 
-Runs on push to `main`. Detects changed modules and registers each one via `lace terraform-registry register`.
-
-### Manual Registration (`terraform-registry-manual-register.yml`)
-
-Manually trigger registration from the Actions tab. Accepts `module_path` and optional `force_register` inputs.
+Runs on push to `main` (or manual `workflow_dispatch`). Detects changed modules,
+authenticates with the service account API key, and registers each module via
+`lace terraform-registry register`.
 
 ## Troubleshooting
 
 ### `organization is required for private modules`
 
-The module's `module.yaml` is missing `registry_visibility: public`. Add the field:
+The module's `module.yaml` is missing `registry_visibility: public`. Add the field.
 
-```yaml
-module:
-  ...
-  registry_visibility: public
-```
+### `terraform validate` fails with provider errors
 
-### `terraform validate` fails with `ref=v1.0.0 not found`
+Ensure `versions.tf` declares the correct provider and version constraint.
+Run `terraform init -backend=false` locally to reproduce.
 
-This occurs when a module references git sources that haven't been tagged yet. Use a commit SHA instead of a version tag for development, or ensure the referenced modules have valid tags.
+### Module ID conflict
 
-### `module.yaml not found` or `main.tf is required`
+Each module must have a globally unique `id` in `module.yaml`.
+Check existing modules for conflicts: `grep -r "^  id:" modules/`.
 
-Both files are required in every module directory. Check the module path and file names (case-sensitive).
+### CI validation passes but publish fails
 
-### Module parses locally but fails CI
-
-Run `lace module parse --path <module-path>` locally to reproduce. Ensure you're using the same lace binary version as CI (downloaded from `https://releases.lace.cloud/lace-cli-linux-amd64`).
+The publish workflow requires the `LACE_SERVICE_ACCOUNT_KEY` secret.
+Verify it's set in the repository settings.
