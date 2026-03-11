@@ -128,28 +128,43 @@ jobs:
           [ $errors -gt 0 ] && exit 1
           echo "module.yaml fields valid"
 
-      - name: Module ID uniqueness
+      - name: Module ID and name uniqueness
         run: |
           MODULE="${{ matrix.module_path }}"
           CURRENT_ID=$(grep "^  id:" "$MODULE/module.yaml" | head -1 | sed 's/^[^:]*: *//' | tr -d '"')
-          [ -z "$CURRENT_ID" ] && { echo "::error::No 'id' field in module.yaml"; exit 1; }
+          CURRENT_NAME=$(grep "^  name:" "$MODULE/module.yaml" | head -1 | sed 's/^[^:]*: *//' | tr -d '"')
+
+          [ -z "$CURRENT_ID" ]   && { echo "::error::No 'id' field in module.yaml"; exit 1; }
+          [ -z "$CURRENT_NAME" ] && { echo "::error::No 'name' field in module.yaml"; exit 1; }
 
           echo "Module id: $CURRENT_ID"
+          echo "Module name: $CURRENT_NAME"
 
-          duplicates=""
+          id_dupes=""
+          name_dupes=""
           while IFS= read -r f; do
             dir=$(dirname "$f")
             [ "$dir" = "$MODULE" ] && continue
             fid=$(grep "^  id:" "$f" | head -1 | sed 's/^[^:]*: *//' | tr -d '"')
-            [ "$fid" = "$CURRENT_ID" ] && duplicates="$duplicates$dir"$'\n'
+            fname=$(grep "^  name:" "$f" | head -1 | sed 's/^[^:]*: *//' | tr -d '"')
+            [ "$fid" = "$CURRENT_ID" ]     && id_dupes="$id_dupes$dir"$'\n'
+            [ "$fname" = "$CURRENT_NAME" ] && name_dupes="$name_dupes$dir"$'\n'
           done < <(find modules -name "module.yaml" -type f)
 
-          if [ -n "$duplicates" ]; then
+          errors=0
+          if [ -n "$id_dupes" ]; then
             echo "::error::Duplicate module id '$CURRENT_ID' found in:"
-            echo "$duplicates" | sed '/^$/d' | while read -r d; do echo "  - $d"; done
-            exit 1
+            echo "$id_dupes" | sed '/^$/d' | while read -r d; do echo "  - $d"; done
+            errors=$((errors + 1))
           fi
-          echo "Module id is unique"
+          if [ -n "$name_dupes" ]; then
+            echo "::error::Duplicate module name '$CURRENT_NAME' found in:"
+            echo "$name_dupes" | sed '/^$/d' | while read -r d; do echo "  - $d"; done
+            errors=$((errors + 1))
+          fi
+
+          [ $errors -gt 0 ] && exit 1
+          echo "Module id and name are unique"
 
       - name: Version bump check
         run: |
