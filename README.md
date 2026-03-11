@@ -88,59 +88,6 @@ module:
 | `registry_visibility` | `public` | Required. Omitting defaults to `private`, which fails in CI. |
 | `id` | `aws/service/name` | Must be unique across the registry. |
 
-## CI Workflows
-
-Three workflows run in pipeline order: **Validate** → **Gate** → **Publish**.
-
-### Validate (`validate.yml`)
-
-Runs on PRs targeting `develop` that touch `modules/**`.
-
-**Job flow:** Detect Changed Modules → Validate (matrix per module) → Summary
-
-| Check | Blocks PR |
-|---|---|
-| Structure (module.yaml + main.tf) | Yes |
-| module.yaml required fields | Yes |
-| Module ID uniqueness | Yes |
-| Version bump vs base branch | Yes |
-| `terraform fmt -check` | Yes |
-| `terraform validate` | Yes |
-| `lace module parse` | Yes |
-
-Concurrency: cancels in-progress runs for the same PR.
-
-### Gate (`gate.yml`)
-
-Runs on PRs targeting `main`.
-
-Enforces that the source branch is `develop`. Any PR to `main` from a different branch fails with:
-
-> PRs to main must come from develop.
-
-This ensures every module reaching `main` has already passed validation on `develop`.
-
-Required status check: `Gate / Source Branch`.
-
-### Publish (`publish.yml`)
-
-Runs on two triggers:
-
-- **Push to `main`** (paths: `modules/**`) — automatic after merging `develop` into `main`
-- **Manual dispatch** (`workflow_dispatch`) — accepts a `module_path` input for republishing a specific module
-
-**Authorization:** Manual dispatch requires the actor to be a member of `@lace-cloud/platform-team`. Push-triggered runs skip the authorization step.
-
-**Job flow:** Authorize (manual only) → Prepare → Register (matrix per module) → Summary
-
-Each module in the Register job:
-1. Validates structure (module.yaml + main.tf)
-2. Authenticates with `LACE_SERVICE_ACCOUNT_KEY`
-3. Registers via `lace terraform-registry register`
-4. Verifies registration via `lace terraform-registry get`
-
-Concurrency: does **not** cancel in-progress runs (ensures every merge publishes).
-
 ## Contributing a Module
 
 1. Branch from `develop`:
@@ -186,11 +133,11 @@ Concurrency: does **not** cancel in-progress runs (ensures every merge publishes
    terraform fmt -check
    ```
 
-5. Open a PR to `develop` — **Validate** runs all checks (see [CI Workflows](#ci-workflows)).
+5. Open a PR to `develop` — CI validates structure, fields, uniqueness, version bump, formatting, and `terraform validate`.
 
-6. Once merged, open a PR from `develop` to `main` — **Gate** verifies the source branch.
+6. Once merged, open a PR from `develop` to `main`.
 
-7. Merge to `main` — **Publish** auto-registers the module in the Lace registry.
+7. Merge to `main` — the module is automatically registered in the Lace registry.
 
 ## Troubleshooting
 
@@ -208,15 +155,6 @@ Run `terraform init -backend=false` locally to reproduce.
 Each module must have a globally unique `id` in `module.yaml`.
 Check existing modules for conflicts: `grep -r "^  id:" modules/`.
 
-### CI validation passes but publish fails
-
-The publish workflow requires the `LACE_SERVICE_ACCOUNT_KEY` secret.
-Verify it's set in the repository settings.
-
 ### Gate fails: "PRs to main must come from develop"
 
-The `gate.yml` workflow enforces that only `develop` can be merged into `main`. If you opened a PR from a feature branch directly to `main`, close it and follow the standard flow: PR to `develop` first, then `develop` to `main`.
-
-### Manual dispatch authorization failure
-
-The `workflow_dispatch` trigger on `publish.yml` requires the actor to be a member of `@lace-cloud/platform-team`. If you get an authorization error, ask a platform team member to run the dispatch or add you to the team.
+Only `develop` can be merged into `main`. If you opened a PR from a feature branch directly to `main`, close it and follow the standard flow: PR to `develop` first, then `develop` to `main`.
