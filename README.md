@@ -2,6 +2,24 @@
 
 Terraform modules for the [Lace](https://lace.cloud) public registry.
 
+## Branch Strategy
+
+All changes follow a three-tier flow:
+
+```
+feature/* → develop → main
+```
+
+| Branch | Purpose |
+|--------|---------|
+| `feature/*` | Individual module work — branch from `develop` |
+| `develop` | Integration branch — every module is validated before merging here |
+| `main` | Production — merging here publishes modules to the registry |
+
+Both `develop` and `main` are protected branches requiring a PR and passing status checks.
+
+Changes to `.github/` require review from `@lace-cloud/platform-team` (CODEOWNERS).
+
 ## Repository Structure
 
 ```
@@ -16,8 +34,10 @@ registry-tf/
 │               ├── outputs.tf
 │               └── versions.tf
 └── .github/
+    ├── CODEOWNERS
     └── workflows/
-        ├── validate.yml   # PR quality gate
+        ├── validate.yml   # PR validation on develop
+        ├── gate.yml       # Source branch check on main
         └── publish.yml    # Auto-registers on merge to main
 ```
 
@@ -68,9 +88,62 @@ module:
 | `registry_visibility` | `public` | Required. Omitting defaults to `private`, which fails in CI. |
 | `id` | `aws/service/name` | Must be unique across the registry. |
 
+## CI Workflows
+
+Three workflows run in pipeline order: **Validate** → **Gate** → **Publish**.
+
+### Validate (`validate.yml`)
+
+Runs on PRs targeting `develop` that touch `modules/**`.
+
+**Job flow:** Detect Changed Modules → Validate (matrix per module) → Summary
+
+| Check | Blocks PR |
+|---|---|
+| Structure (module.yaml + main.tf) | Yes |
+| module.yaml required fields | Yes |
+| Module ID uniqueness | Yes |
+| Version bump vs base branch | Yes |
+| `terraform fmt -check` | Yes |
+| `terraform validate` | Yes |
+| `lace module parse` | Yes |
+
+Concurrency: cancels in-progress runs for the same PR.
+
+### Gate (`gate.yml`)
+
+Runs on PRs targeting `main`.
+
+Enforces that the source branch is `develop`. Any PR to `main` from a different branch fails with:
+
+> PRs to main must come from develop.
+
+This ensures every module reaching `main` has already passed validation on `develop`.
+
+Required status check: `Gate / Source Branch`.
+
+### Publish (`publish.yml`)
+
+Runs on two triggers:
+
+- **Push to `main`** (paths: `modules/**`) — automatic after merging `develop` into `main`
+- **Manual dispatch** (`workflow_dispatch`) — accepts a `module_path` input for republishing a specific module
+
+**Authorization:** Manual dispatch requires the actor to be a member of `@lace-cloud/platform-team`. Push-triggered runs skip the authorization step.
+
+**Job flow:** Authorize (manual only) → Prepare → Register (matrix per module) → Summary
+
+Each module in the Register job:
+1. Validates structure (module.yaml + main.tf)
+2. Authenticates with `LACE_SERVICE_ACCOUNT_KEY`
+3. Registers via `lace terraform-registry register`
+4. Verifies registration via `lace terraform-registry get`
+
+Concurrency: does **not** cancel in-progress runs (ensures every merge publishes).
+
 ## Contributing a Module
 
-1. Create a branch from `develop`:
+1. Branch from `develop`:
    ```bash
    git checkout develop && git pull
    git checkout -b feature/aws-<service>-<name>
@@ -113,41 +186,11 @@ module:
    terraform fmt -check
    ```
 
-5. Open a PR to `develop`. CI runs `validate.yml`:
-   - Structure check (module.yaml + main.tf exist)
-   - Field validation (id, name, system, version, registry_visibility)
-   - Module ID uniqueness
-   - Version bump check (vs base branch)
-   - `terraform fmt -check`
-   - `terraform init && terraform validate`
-   - `lace module parse`
+5. Open a PR to `develop` — **Validate** runs all checks (see [CI Workflows](#ci-workflows)).
 
-6. Merge to `develop`, then PR `develop` to `main`.
+6. Once merged, open a PR from `develop` to `main` — **Gate** verifies the source branch.
 
-7. On merge to `main`, `publish.yml` auto-registers the module in the Lace registry.
-
-## CI Workflows
-
-### PR Validation (`validate.yml`)
-
-Runs on PRs targeting `develop` or `main` that touch `modules/**`.
-Detects changed module directories and validates each one in parallel.
-
-| Check | Blocks PR |
-|---|---|
-| Structure (module.yaml + main.tf) | Yes |
-| module.yaml required fields | Yes |
-| Module ID uniqueness | Yes |
-| Version bump vs base branch | Yes |
-| `terraform fmt -check` | Yes |
-| `terraform validate` | Yes |
-| `lace module parse` | Yes |
-
-### Auto Publish (`publish.yml`)
-
-Runs on push to `main` (or manual `workflow_dispatch`). Detects changed modules,
-authenticates with the service account API key, and registers each module via
-`lace terraform-registry register`.
+7. Merge to `main` — **Publish** auto-registers the module in the Lace registry.
 
 ## Troubleshooting
 
@@ -169,3 +212,11 @@ Check existing modules for conflicts: `grep -r "^  id:" modules/`.
 
 The publish workflow requires the `LACE_SERVICE_ACCOUNT_KEY` secret.
 Verify it's set in the repository settings.
+
+### Gate fails: "PRs to main must come from develop"
+
+The `gate.yml` workflow enforces that only `develop` can be merged into `main`. If you opened a PR from a feature branch directly to `main`, close it and follow the standard flow: PR to `develop` first, then `develop` to `main`.
+
+### Manual dispatch authorization failure
+
+The `workflow_dispatch` trigger on `publish.yml` requires the actor to be a member of `@lace-cloud/platform-team`. If you get an authorization error, ask a platform team member to run the dispatch or add you to the team.
