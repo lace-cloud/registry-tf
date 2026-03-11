@@ -3,7 +3,6 @@ name: Validate Modules
 on:
   pull_request:
     branches: [develop, main]
-    paths: ['modules/**']
 
 concurrency:
   group: validate-${{ github.event.pull_request.number }}
