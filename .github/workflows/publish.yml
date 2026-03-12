@@ -154,14 +154,14 @@ jobs:
 
       - name: Authenticate
         env:
-          LACE_API_KEY: ${{ secrets.LACE_API_KEY }}
+          LACE_REGISTRY_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
         run: |
-          [ -z "$LACE_API_KEY" ] && { echo "::error::LACE_API_KEY secret not set"; exit 1; }
+          [ -z "$LACE_REGISTRY_KEY" ] && { echo "::error::LACE_REGISTRY_KEY secret not set"; exit 1; }
           lace whoami
 
       - name: Register module
         env:
-          LACE_API_KEY: ${{ secrets.LACE_API_KEY }}
+          LACE_REGISTRY_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
           LACE_ORGANIZATION: ${{ vars.LACE_ORGANIZATION }}
         run: |
           ORG_FLAG=""
@@ -175,7 +175,7 @@ jobs:
 
       - name: Verify registration
         env:
-          LACE_API_KEY: ${{ secrets.LACE_API_KEY }}
+          LACE_REGISTRY_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
           LACE_ORGANIZATION: ${{ vars.LACE_ORGANIZATION }}
         run: |
           MODULE="${{ matrix.module_path }}"

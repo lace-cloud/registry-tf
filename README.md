@@ -64,7 +64,6 @@ module:
   name: module-name                      # Required: kebab-case name
   system: aws                            # Required: aws | gcp | azure
   version: 1.0.0                         # Required: semantic version
-  registry_visibility: public            # Required for public registry
   description: "What this module does"   # Required
 
   categories:
@@ -85,7 +84,6 @@ module:
 
 | Field | Value | Why it matters |
 |---|---|---|
-| `registry_visibility` | `public` | Required. Omitting defaults to `private`, which fails in CI. |
 | `id` | `aws/service/name` | Must be unique across the registry. |
 
 ## Contributing a Module
@@ -107,7 +105,6 @@ module:
      name: <name>
      system: aws
      version: 1.0.0
-     registry_visibility: public
      description: "..."
    ```
 
@@ -152,26 +149,16 @@ Enterprise teams can fork this repository to run a private Terraform module regi
    | Variable | Value |
    |----------|-------|
    | `LACE_ORGANIZATION` | Your Lace org slug (e.g., `acme-corp`) |
-   | `REGISTRY_VISIBILITY` | `private` |
 
 3. **Set repository secret** (Settings → Secrets and variables → Actions → Secrets):
 
    | Secret | Value |
    |--------|-------|
-   | `LACE_API_KEY` | Org-scoped API key (create via `lace api-key create --organization <slug>`) |
+   | `LACE_REGISTRY_KEY` | Org-scoped API key (create via `lace api-key create --organization <slug>`) |
 
 4. **Configure branch protection** on `develop` and `main` with the same required status check names (`Summary`, `Gate / Source Branch`).
 
-5. **Update `module.yaml` files** — set `registry_visibility: private` in each module's metadata:
-
-   ```yaml
-   module:
-     id: aws/s3/bucket
-     name: bucket
-     system: aws
-     version: 1.0.0
-     registry_visibility: private
-   ```
+5. **Registry visibility** is configured at the organization level in the Lace portal. No per-module visibility setting is needed.
 
 6. **Customize the `authorize` job** (optional) — the Authorize job in `publish.yml` checks membership in `@<org>/platform-team` using a GitHub App. If you don't use the Lace GitHub App, either:
    - Remove the `authorize` job and the `needs: authorize` line from the `prepare` job
@@ -179,13 +166,13 @@ Enterprise teams can fork this repository to run a private Terraform module regi
 
 ### How it works
 
-When variables are unset (the default for the public `lace-cloud/registry-tf`), workflows behave exactly as before: modules are published to the public registry with visibility `public`. When `LACE_ORGANIZATION` is set, the CLI passes `--organization <slug>` to registry commands, scoping all operations to that org's private registry.
+When variables are unset (the default for the public `lace-cloud/registry-tf`), workflows behave exactly as before: modules are published to the public registry. When `LACE_ORGANIZATION` is set, the CLI passes `--organization <slug>` to registry commands, scoping all operations to that org's private registry. Registry visibility is configured at the organization level in the Lace portal.
 
 ## Troubleshooting
 
 ### `organization is required for private modules`
 
-The module's `module.yaml` is missing `registry_visibility: public`. Add the field.
+Ensure `LACE_ORGANIZATION` is set in repository variables and that your organization's registry visibility is configured in the Lace portal.
 
 ### `terraform validate` fails with provider errors
 
