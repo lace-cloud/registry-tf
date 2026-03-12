@@ -21,7 +21,7 @@ Runs on PRs targeting `develop`.
 **Validate checks (in order):**
 
 1. Structure — `module.yaml` + `main.tf` exist
-2. Field validation — `id`, `name`, `system`, `version`, `registry_visibility` present; visibility must be `public`
+2. Field validation — `id`, `name`, `system`, `version`, `registry_visibility` present; visibility must match `REGISTRY_VISIBILITY` variable (defaults to `public`)
 3. Module ID uniqueness — scans all `module.yaml` files in repo
 4. Version bump — compares `version` field against base branch; skipped for new modules
 5. `terraform fmt -check -recursive`
@@ -57,7 +57,7 @@ No concurrency group (single lightweight job).
 |-----|---------|
 | Authorize | Runs only for `workflow_dispatch`. Generates GitHub App token (`LACE_ORG_CI_APP_ID` + `LACE_ORG_CI_PRIVATE_KEY`), checks actor's membership in `platform-team` via API. |
 | Prepare | Runs if Authorize succeeded or was skipped. For push: `git diff HEAD^ HEAD` to find changed modules. For dispatch: validates the provided `module_path` exists. |
-| Register | Matrix per module (`fail-fast: false`). Each: validate structure → `setup-terraform` → install Lace CLI → authenticate with `LACE_SERVICE_ACCOUNT_KEY` → `lace terraform-registry register` → verify via `lace terraform-registry get`. |
+| Register | Matrix per module (`fail-fast: false`). Each: validate structure → `setup-terraform` → install Lace CLI → authenticate with `LACE_API_KEY` → `lace terraform-registry register` (with optional `--organization` from `LACE_ORGANIZATION`) → verify via `lace terraform-registry get`. |
 | Summary | Reports registered modules and result. |
 
 **Concurrency:** `publish-${{ github.ref }}`, does **not** cancel in-progress (every merge must publish).
@@ -84,9 +84,16 @@ CODEOWNERS: `/.github/ @lace-cloud/platform-team`
 
 | Secret | Purpose | Used by |
 |--------|---------|---------|
-| `LACE_SERVICE_ACCOUNT_KEY` | Service account API key for registry publishing | `publish.yml` (Register job) |
+| `LACE_API_KEY` | API key for registry publishing (service account key for public, org-scoped key for private) | `publish.yml` (Register job) |
 | `LACE_ORG_CI_APP_ID` | GitHub App ID for org API access | `publish.yml` (Authorize job) |
 | `LACE_ORG_CI_PRIVATE_KEY` | GitHub App private key | `publish.yml` (Authorize job) |
+
+## Variables
+
+| Variable | Default | Purpose | Used by |
+|----------|---------|---------|---------|
+| `LACE_ORGANIZATION` | _(unset)_ | Organization slug for private registries. When set, passes `--organization` to CLI commands. | `publish.yml` (Register job) |
+| `REGISTRY_VISIBILITY` | `public` | Expected `registry_visibility` value in `module.yaml`. Set to `private` for private registries. | `validate.yml` (Validate job) |
 
 ### Service Account
 
@@ -94,12 +101,13 @@ CODEOWNERS: `/.github/ @lace-cloud/platform-team`
 - **API Key:** hashed in `api_key` table, metadata `{ type: "service_account", purpose: "public_registry_publishing" }`
 - **Key generation:** `lace-middleware/scripts/create-service-account-key.ts` — generates crypto locally, outputs wrangler D1 commands
 - Service accounts can publish public modules without `x-org-slug` header (enforced in `terraform-registry.ts`)
+- **Rename note:** The repo secret was renamed from `LACE_SERVICE_ACCOUNT_KEY` to `LACE_API_KEY` to support both service account keys (public) and org-scoped keys (private forks)
 
 ## Troubleshooting
 
 ### CI validation passes but publish fails
 
-The Register job requires `LACE_SERVICE_ACCOUNT_KEY`. Verify it's set in repository Settings → Secrets and variables → Actions.
+The Register job requires `LACE_API_KEY`. Verify it's set in repository Settings → Secrets and variables → Actions.
 
 ### Manual dispatch authorization failure
 

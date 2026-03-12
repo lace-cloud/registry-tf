@@ -139,6 +139,48 @@ module:
 
 7. Merge to `main` — the module is automatically registered in the Lace registry.
 
+## Using This Repo as a Private Module Registry
+
+Enterprise teams can fork this repository to run a private Terraform module registry under their Lace organization.
+
+### Setup
+
+1. **Fork** this repo into your GitHub organization.
+
+2. **Set repository variables** (Settings → Secrets and variables → Actions → Variables):
+
+   | Variable | Value |
+   |----------|-------|
+   | `LACE_ORGANIZATION` | Your Lace org slug (e.g., `acme-corp`) |
+   | `REGISTRY_VISIBILITY` | `private` |
+
+3. **Set repository secret** (Settings → Secrets and variables → Actions → Secrets):
+
+   | Secret | Value |
+   |--------|-------|
+   | `LACE_API_KEY` | Org-scoped API key (create via `lace api-key create --organization <slug>`) |
+
+4. **Configure branch protection** on `develop` and `main` with the same required status check names (`Summary`, `Gate / Source Branch`).
+
+5. **Update `module.yaml` files** — set `registry_visibility: private` in each module's metadata:
+
+   ```yaml
+   module:
+     id: aws/s3/bucket
+     name: bucket
+     system: aws
+     version: 1.0.0
+     registry_visibility: private
+   ```
+
+6. **Customize the `authorize` job** (optional) — the Authorize job in `publish.yml` checks membership in `@<org>/platform-team` using a GitHub App. If you don't use the Lace GitHub App, either:
+   - Remove the `authorize` job and the `needs: authorize` line from the `prepare` job
+   - Or replace it with your own authorization mechanism
+
+### How it works
+
+When variables are unset (the default for the public `lace-cloud/registry-tf`), workflows behave exactly as before: modules are published to the public registry with visibility `public`. When `LACE_ORGANIZATION` is set, the CLI passes `--organization <slug>` to registry commands, scoping all operations to that org's private registry.
+
 ## Troubleshooting
 
 ### `organization is required for private modules`
