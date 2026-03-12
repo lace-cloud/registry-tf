@@ -154,11 +154,11 @@ Enterprise teams can fork this repository to run a private Terraform module regi
 
    | Secret | Value |
    |--------|-------|
-   | `LACE_REGISTRY_KEY` | Org-scoped API key (create via `lace api-key create --organization <slug>`) |
+   | `LACE_REGISTRY_KEY` | Org-scoped API key (create via `lace api-key create --organization <slug>` or in the portal at Organization Settings → Registry Keys) |
 
 4. **Configure branch protection** on `develop` and `main` with the same required status check names (`Summary`, `Gate / Source Branch`).
 
-5. **Registry visibility** is configured at the organization level in the Lace portal. No per-module visibility setting is needed.
+5. **Organization registries are private.** Only org members can view and download private modules.
 
 6. **Customize the `authorize` job** (optional) — the Authorize job in `publish.yml` checks membership in `@<org>/platform-team` using a GitHub App. If you don't use the Lace GitHub App, either:
    - Remove the `authorize` job and the `needs: authorize` line from the `prepare` job
@@ -166,13 +166,13 @@ Enterprise teams can fork this repository to run a private Terraform module regi
 
 ### How it works
 
-When variables are unset (the default for the public `lace-cloud/registry-tf`), workflows behave exactly as before: modules are published to the public registry. When `LACE_ORGANIZATION` is set, the CLI passes `--organization <slug>` to registry commands, scoping all operations to that org's private registry. Registry visibility is configured at the organization level in the Lace portal.
+When variables are unset (the default for the public `lace-cloud/registry-tf`), workflows behave exactly as before: modules are published to the public registry. When `LACE_ORGANIZATION` is set, the CLI passes `--organization <slug>` to registry commands, scoping all operations to that org's private registry. Organization registries are private — only org members can list and download modules.
 
 ## Troubleshooting
 
 ### `organization is required for private modules`
 
-Ensure `LACE_ORGANIZATION` is set in repository variables and that your organization's registry visibility is configured in the Lace portal.
+Ensure `LACE_ORGANIZATION` is set in repository variables and that `LACE_REGISTRY_KEY` is set in repository secrets.
 
 ### `terraform validate` fails with provider errors
 
