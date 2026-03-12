@@ -119,8 +119,9 @@ jobs:
           done
 
           vis=$(grep "^  registry_visibility:" "$YAML" | head -1 | sed 's/^[^:]*: *//' | tr -d '"' | tr -d "'")
-          if [ -n "$vis" ] && [ "$vis" != "public" ]; then
-            echo "::error::registry_visibility must be 'public' for the public registry (got '$vis')"
+          EXPECTED="${{ vars.REGISTRY_VISIBILITY || 'public' }}"
+          if [ -n "$vis" ] && [ "$vis" != "$EXPECTED" ]; then
+            echo "::error::registry_visibility must be '$EXPECTED' (got '$vis')"
             errors=$((errors + 1))
           fi
 
