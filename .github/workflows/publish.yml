@@ -126,7 +126,7 @@ jobs:
     name: Register
     runs-on: ubuntu-latest
     needs: prepare
-    if: needs.prepare.outputs.modules_found == 'true'
+    if: always() && needs.prepare.result == 'success' && needs.prepare.outputs.modules_found == 'true'
 
     strategy:
       matrix:
