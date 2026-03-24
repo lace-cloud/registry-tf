@@ -1,0 +1,35 @@
+module:
+  id: aws/iam/policy
+  name: iam-policy
+  system: aws
+  version: 1.0.0
+  description: "AWS IAM policy from a JSON policy document"
+  categories:
+    - iam
+    - security
+    - identity
+  authors:
+    - name: "Lace Team"
+      email: "team@lace.cloud"
+  registry_visibility: public
+  example: |
+    module "policy" {
+      source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/iam/policy?ref=v1.0.0"
+
+      name        = "my-app-policy"
+      description = "Policy for my application"
+      policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+          {
+            Effect   = "Allow"
+            Action   = ["s3:GetObject", "s3:PutObject"]
+            Resource = "arn:aws:s3:::my-bucket/*"
+          }
+        ]
+      })
+
+      tags = {
+        Environment = "production"
+      }
+    }
