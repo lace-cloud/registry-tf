@@ -3,11 +3,11 @@ module:
   name: iam-policy
   system: aws
   version: 1.0.0
-  description: "AWS IAM policy from a JSON policy document"
+  description: "AWS IAM policy with configurable policy document and tags"
   categories:
     - iam
     - security
-    - identity
+    - permissions
   authors:
     - name: "Lace Team"
       email: "team@lace.cloud"
@@ -16,15 +16,15 @@ module:
     module "policy" {
       source = "git::https://github.com/lace-cloud/registry-tf.git//modules/aws/iam/policy?ref=v1.0.0"
 
-      name        = "my-app-policy"
-      description = "Policy for my application"
-      policy = jsonencode({
+      policy_name = "my-s3-read-policy"
+
+      policy_document = jsonencode({
         Version = "2012-10-17"
         Statement = [
           {
+            Action   = ["s3:GetObject", "s3:ListBucket"]
             Effect   = "Allow"
-            Action   = ["s3:GetObject", "s3:PutObject"]
-            Resource = "arn:aws:s3:::my-bucket/*"
+            Resource = ["arn:aws:s3:::my-bucket", "arn:aws:s3:::my-bucket/*"]
           }
         ]
       })

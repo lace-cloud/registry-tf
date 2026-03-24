@@ -1,21 +1,15 @@
-variable "name" {
+variable "policy_name" {
   description = "The name of the IAM policy"
   type        = string
 }
 
-variable "description" {
-  description = "A description of the IAM policy"
-  type        = string
-  default     = ""
-}
-
-variable "policy" {
-  description = "The JSON policy document"
+variable "policy_document" {
+  description = "The IAM policy document (JSON string)"
   type        = string
 }
 
 variable "tags" {
-  description = "A map of tags to assign to the policy"
+  description = "A map of tags to assign to the IAM policy"
   type        = map(string)
   default     = {}
 }

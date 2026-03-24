@@ -4,6 +4,6 @@ variable "role_name" {
 }
 
 variable "policy_arn" {
-  description = "The ARN of the policy to attach"
+  description = "The ARN of the IAM policy to attach"
   type        = string
 }
