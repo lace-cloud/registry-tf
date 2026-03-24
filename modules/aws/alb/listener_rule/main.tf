@@ -58,4 +58,11 @@ resource "aws_lb_listener_rule" "this" {
     },
     var.tags
   )
+
+  lifecycle {
+    precondition {
+      condition     = length(var.host_headers) > 0 || length(var.path_patterns) > 0
+      error_message = "At least one of host_headers or path_patterns must be provided."
+    }
+  }
 }
