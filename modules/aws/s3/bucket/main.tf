@@ -1,6 +1,5 @@
 resource "aws_s3_bucket" "this" {
-  bucket         = var.bucket
-  testing_update = var.bucket
+  bucket = var.bucket
 
   tags = merge(
     {
