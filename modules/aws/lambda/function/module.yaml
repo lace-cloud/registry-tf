@@ -2,5 +2,5 @@ module:
   id: aws/lambda/function
   name: function
   system: aws
-  version: 1.0.0
+  version: 1.0.1
   description: "Lambda function module for testing"
