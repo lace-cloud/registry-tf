@@ -222,14 +222,24 @@ jobs:
       - name: Install Lace CLI + tfsec
         if: startsWith(matrix.manifest_dir, 'modules/')
         run: |
-          wget -q https://releases.lace.cloud/lace-cli-linux-amd64 -O lace
-          chmod +x lace && sudo mv lace /usr/local/bin/lace
+          sudo apt-get update -qq && sudo apt-get install -y -qq minisign
+          curl -fsSL https://releases.lace.cloud/install.sh | LACE_INSTALL_DIR="$RUNNER_TEMP/bin" sh
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           wget -q https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64 -O tfsec
           chmod +x tfsec && sudo mv tfsec /usr/local/bin/tfsec
 
+      # The same certification the publish job runs: a module that is not in
+      # Lace form is refused at publish with publisher_verdict_not_lace_form.
+      - name: Lace certification
+        if: startsWith(matrix.manifest_dir, 'modules/')
+        run: |
+          lace module validate --path "${{ matrix.manifest_dir }}"
+          grep -q '"verdict": "already-lace-style"' "${{ matrix.manifest_dir }}/.lace/verdict.json" \
+            || { echo "::error::not in Lace form; run: lace module convert --path ${{ matrix.manifest_dir }}"; exit 1; }
+
       - name: Terraform security scan
         if: startsWith(matrix.manifest_dir, 'modules/')
-        run: lace terraform scan --path "${{ matrix.manifest_dir }}" --severity HIGH
+        run: lace module scan --path "${{ matrix.manifest_dir }}" --severity HIGH
 
   summary:
     name: Summary

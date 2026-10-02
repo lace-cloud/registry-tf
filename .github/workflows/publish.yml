@@ -1,5 +1,10 @@
 name: Publish
 
+# Lace accepts a module publish only from a GitHub Actions job: it verifies
+# the job's OIDC token and records this repository and commit as the module's
+# provenance, so `id-token: write` is required. Repository settings:
+#   secret   LACE_REGISTRY_KEY  a service token that may publish author `lace`
+#   variable LACE_AUTH_URL      optional; the CLI defaults to https://lace.cloud
 on:
   push:
     branches: [main]
@@ -7,7 +12,6 @@ on:
       - 'modules/**'
       - 'scanners/**'
       - 'handlers/**'
-      - 'chaos-providers/**'
   workflow_dispatch:
     inputs:
       manifest_dir:
@@ -21,6 +25,7 @@ concurrency:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   authorize:
@@ -79,7 +84,7 @@ jobs:
           fi
 
           changed=$(git diff --name-only --diff-filter=AM HEAD^ HEAD \
-            | grep -E '^(modules|scanners|handlers|chaos-providers)/' || true)
+            | grep -E '^(modules|scanners|handlers)/' || true)
           if [ -z "$changed" ]; then
             echo "No manifest changes detected"
             echo "manifests_found=false" >> $GITHUB_OUTPUT
@@ -125,20 +130,22 @@ jobs:
         manifest_dir: ${{ fromJson(needs.prepare.outputs.manifests_json) }}
       fail-fast: false
 
+    env:
+      LACE_API_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
+      LACE_AUTH_URL: ${{ vars.LACE_AUTH_URL }}
+
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check configuration
+        run: |
+          [ -n "$LACE_API_KEY" ] || { echo "::error::LACE_REGISTRY_KEY secret not set"; exit 1; }
+
       - name: Install Lace CLI
         run: |
-          wget -q https://releases.lace.cloud/lace-cli-linux-amd64 -O lace
-          chmod +x lace && sudo mv lace /usr/local/bin/lace
-
-      - name: Authenticate
-        env:
-          LACE_REGISTRY_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
-        run: |
-          [ -z "$LACE_REGISTRY_KEY" ] && { echo "::error::LACE_REGISTRY_KEY secret not set"; exit 1; }
-          lace whoami
+          sudo apt-get update -qq && sudo apt-get install -y -qq minisign
+          curl -fsSL https://releases.lace.cloud/install.sh | LACE_INSTALL_DIR="$RUNNER_TEMP/bin" sh
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       - name: Resolve axis
         id: axis
@@ -149,23 +156,28 @@ jobs:
             modules)         AXIS=module ;;
             scanners)        AXIS=scanner ;;
             handlers)        AXIS=handler ;;
-            chaos-providers) AXIS=chaos_provider ;;
             *)               echo "::error::Unknown axis dir: $AXIS_DIR"; exit 1 ;;
           esac
           echo "axis=$AXIS" >> $GITHUB_OUTPUT
 
+      - uses: hashicorp/setup-terraform@v3
+        if: steps.axis.outputs.axis == 'module'
+        with:
+          terraform_wrapper: false
+
+      # A module publish uploads exactly the tree certified here.
+      - name: Certify
+        if: steps.axis.outputs.axis == 'module'
+        run: lace module validate --path "${{ matrix.manifest_dir }}"
+
       - name: Register
-        env:
-          LACE_REGISTRY_KEY: ${{ secrets.LACE_REGISTRY_KEY }}
         run: |
           DIR="${{ matrix.manifest_dir }}"
           AXIS="${{ steps.axis.outputs.axis }}"
-          README_FLAG=""
-          [ -f "$DIR/README.md" ] && README_FLAG="--readme $DIR/README.md"
-          lace registry register \
-            --axis "$AXIS" \
-            --manifest "$DIR/manifest.yaml" \
-            $README_FLAG
+          args=(--axis "$AXIS" --manifest "$DIR/manifest.yaml")
+          [ -f "$DIR/README.md" ] && args+=(--readme "$DIR/README.md")
+          [ "$AXIS" = "module" ] && args+=(--path "$DIR")
+          lace registry register "${args[@]}"
 
   summary:
     name: Summary

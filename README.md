@@ -64,7 +64,7 @@ A push to `main` that touches `modules/**`, `scanners/**`, `handlers/**`, or `ch
 3. Per manifest: `lace registry register --axis <axis> --manifest <dir>/manifest.yaml --readme <dir>/README.md`.
 4. The CLI POSTs to `/api/v1/registry/index` with `Authorization: Bearer ${LACE_REGISTRY_KEY}`.
 
-`LACE_REGISTRY_KEY` is a service-token API key with the `REGISTRY_PUBLISH` scope (publishes public manifests, `org_id = NULL`). It is held only by this repo's CI.
+`LACE_REGISTRY_KEY` is a service token that may publish public manifests under author `lace` (`org_id = NULL`): `registry:publish:lace`, or `registry:publish`, created in the org whose slug is `lace`. It is held only by this repo's CI, which hands it to the CLI as `LACE_API_KEY`. A module publish also needs the job's GitHub Actions OIDC token (`id-token: write`) and a tree that `lace module validate` certifies as `already-lace-style`; run `lace module convert` on a tree that is not. The Lace environment is the CLI default, `https://lace.cloud`, unless the repository variable `LACE_AUTH_URL` names another.
 
 The publish endpoint is idempotent on `(axis, author, name, version) + sha256(manifest.yaml)`. Re-publishing identical content is a no-op (`result: 'unchanged'`). Re-publishing a different `manifest.yaml` at the same `(axis, author, name, version)` is rejected (409): manifests are immutable per version.
 
