@@ -4,6 +4,11 @@ author: lace
 name: chaos
 version: v1.0.1
 displayName: Chaos Gate
+description: Chaos injection gate. Blocks a Run when a non-terminal chaos Run already holds the target stack, so two experiments never collide on one stack.
+categories:
+  - governance
+  - gating
+  - chaos
 runtime:
   location: in-tree
   handlerId: lace/chaos

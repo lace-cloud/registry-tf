@@ -4,12 +4,7 @@ author: lace
 name: incident-opener
 version: v1.0.1
 displayName: Incident Opener
-description: |
-  Holds at most one open incident per install: a finding batch at or above
-  the configured severity floor opens it and later batches link into it;
-  resolves once every linked finding is resolved. Observes the
-  scanner-producer non-run Hook (findings.batch_created / finding.resolved /
-  findings.batch_resolved) rather than a run-task hook.
+description: "Holds at most one open incident per install: a finding batch at or above the configured severity floor opens it and later batches link into it; resolves once every linked finding is resolved."
 categories:
   - incident-response
   - alerting

@@ -4,6 +4,11 @@ author: lace
 name: approval-policy
 version: v1.0.1
 displayName: Approval Policy
+description: Pre-apply approval gate. Resolves the approval ladder (auto-apply, lightweight audit, awaiting approval, blocked) over an ordered rules document and gates the Run at pre_apply.
+categories:
+  - governance
+  - gating
+  - pre-apply
 runtime:
   location: in-tree
   handlerId: lace/approval-policy

@@ -4,9 +4,7 @@ author: lace
 name: jsm-change
 version: v1.0.1
 displayName: Jira Service Management Change
-description: |
-  Opens a Jira Service Management change request at pre_apply and parks the
-  Run awaiting the external decision. The JSM adapter runs in-tree.
+description: Opens a Jira Service Management change request at pre_apply and parks the Run awaiting the external decision. The JSM adapter runs in-tree.
 categories:
   - governance
   - gating

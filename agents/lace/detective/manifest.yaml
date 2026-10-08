@@ -4,6 +4,11 @@ author: lace
 name: detective
 version: v1.0.1
 displayName: Detective
+description: Cross-axis attribution. Walks labeled incident/outcome history to explain a Run, drift, or finding. Interaction-invoked; renders at the Trace Manifestation. Read-only; never gates.
+categories:
+  - intelligence
+  - advisory
+  - attribution
 runtime:
   location: in-tree
   handlerId: lace/detective

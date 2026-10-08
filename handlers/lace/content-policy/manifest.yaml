@@ -4,11 +4,7 @@ author: lace
 name: content-policy
 version: v1.0.1
 displayName: Content Policy
-description: |
-  Evaluates an authored rules document against the plan at pre_apply and
-  denies changes that violate a rule — the native DSL content gate (PDP
-  handler), answering "is this change permitted at all" rather than
-  approval-policy's "who must sign off".
+description: Evaluates an authored rules document against the plan at pre_apply and denies changes that violate a rule — the native DSL content gate (PDP handler), answering "is this change permitted at all" rather than approval-policy's "who must sign off".
 categories:
   - governance
   - gating
@@ -159,6 +155,7 @@ configSchema:
                 required:
                   - op
                   - value
+                  - path
                 properties:
                   op:
                     type: string
@@ -176,6 +173,7 @@ configSchema:
                       - boolean
                   path:
                     type: string
+                    minLength: 1
               riskFormula:
                 type: object
                 additionalProperties: false

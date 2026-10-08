@@ -4,9 +4,7 @@ author: lace
 name: datadog-notifier
 version: v1.0.1
 displayName: Datadog Run Notifier
-description: |
-  Posts a Datadog event with run summary (kind, status, plan-diff counts,
-  stack) after each Run completes. Advisory only — never blocks Runs.
+description: Posts a Datadog event with run summary after each Run completes.
 categories:
   - observability
   - notification

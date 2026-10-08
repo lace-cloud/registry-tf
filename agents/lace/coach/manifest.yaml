@@ -4,6 +4,11 @@ author: lace
 name: coach
 version: v1.0.1
 displayName: Coach
+description: Recommends next best platform actions from your org's posture. Interaction-invoked; renders at the Draft Manifestation. Read-only; never gates.
+categories:
+  - intelligence
+  - advisory
+  - recommendations
 runtime:
   location: in-tree
   handlerId: lace/coach

@@ -4,6 +4,11 @@ author: lace
 name: drift-gate
 version: v1.0.1
 displayName: Drift Gate
+description: Pre-apply drift gate. Reads recent open drift findings on the target stack and blocks when any finding meets or exceeds the configured severity threshold.
+categories:
+  - governance
+  - gating
+  - drift
 runtime:
   location: in-tree
   handlerId: lace/drift-gate

@@ -4,6 +4,11 @@ author: lace
 name: triage
 version: v1.0.1
 displayName: Triage
+description: Finding-triage advisory layer. When a Finding batch lands, groups the new findings against the org's resolution history. Read-only; never gates.
+categories:
+  - intelligence
+  - advisory
+  - findings
 runtime:
   location: in-tree
   handlerId: lace/triage

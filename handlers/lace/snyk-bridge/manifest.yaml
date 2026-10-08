@@ -4,9 +4,7 @@ author: lace
 name: snyk-bridge
 version: v1.0.1
 displayName: Snyk SAST Bridge
-description: |
-  Reads plan-diff for Snyk-relevant resources, queries Snyk REST API,
-  and produces a passed/failed verdict gated on severity threshold.
+description: Reads plan-diff for Snyk-relevant resources and gates on severity threshold.
 categories:
   - security
   - sast

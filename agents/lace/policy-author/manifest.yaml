@@ -4,6 +4,11 @@ author: lace
 name: policy-author
 version: v1.0.1
 displayName: Policy Author
+description: Drafts approval-policy rules from your decision history. Interaction-invoked; renders at the Draft Manifestation. Read-only; never gates.
+categories:
+  - intelligence
+  - advisory
+  - governance
 runtime:
   location: in-tree
   handlerId: lace/policy-author

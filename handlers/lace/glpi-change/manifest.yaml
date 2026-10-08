@@ -4,9 +4,7 @@ author: lace
 name: glpi-change
 version: v1.0.1
 displayName: GLPI Change
-description: |
-  Opens a GLPI change record at pre_apply and parks the Run awaiting the
-  external decision. The GLPI adapter runs in-tree.
+description: Opens a GLPI change record at pre_apply and parks the Run awaiting the external decision. The GLPI adapter runs in-tree.
 categories:
   - governance
   - gating

@@ -4,10 +4,7 @@ author: lace
 name: run-whisperer
 version: v1.0.1
 displayName: Run Whisperer
-description: |
-  Pre-apply advisory layer. Surfaces similar past Runs in your org's
-  history, stack-level patterns, and module README warnings.
-  Read-only; never gates a Run.
+description: Pre-apply advisory layer. Surfaces similar past Runs, stack-level patterns, and module README warnings. Read-only; never gates a Run.
 categories:
   - intelligence
   - advisory
