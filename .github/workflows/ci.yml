@@ -33,7 +33,7 @@ jobs:
             modules/**
             scanners/**
             handlers/**
-            chaos-providers/**
+            agents/**
 
       - name: Resolve manifest roots
         id: find
@@ -109,7 +109,7 @@ jobs:
             modules)
               [ -f "$DIR/main.tf" ] || { echo "::error::main.tf missing in $DIR"; exit 1; }
               ;;
-            scanners|handlers|chaos-providers)
+            scanners|handlers|agents)
               # Non-module axes are manifest + README only; no .tf files.
               ;;
             *)
@@ -127,7 +127,7 @@ jobs:
             modules)         AXIS_KEY=module ;;
             scanners)        AXIS_KEY=scanner ;;
             handlers)        AXIS_KEY=handler ;;
-            chaos-providers) AXIS_KEY=chaos_provider ;;
+            agents)          AXIS_KEY=agent ;;
           esac
 
           # Required envelope fields (per ManifestBaseShape in the API). The
@@ -166,7 +166,7 @@ jobs:
             o_name=$(grep "^name:" "$f" | head -1 | sed 's/^name:[[:space:]]*//' | tr -d '"')
             [ "$o_axis" = "$AXIS" ] && [ "$o_author" = "$AUTHOR" ] && [ "$o_name" = "$NAME" ] \
               && dupes="$dupes$other_dir"$'\n'
-          done < <(find modules scanners handlers chaos-providers -name manifest.yaml -type f 2>/dev/null)
+          done < <(find modules scanners handlers agents -name manifest.yaml -type f 2>/dev/null)
 
           if [ -n "$dupes" ]; then
             echo "::error::Duplicate (axis=$AXIS, author=$AUTHOR, name=$NAME) found in:"

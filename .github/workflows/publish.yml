@@ -2,12 +2,14 @@ name: Publish
 
 on:
   push:
-    branches: [main]
+    # main publishes to production (lace.cloud), develop to preview
+    # (preview.lace.cloud); the register job's environment follows the ref.
+    branches: [main, develop]
     paths:
       - 'modules/**'
       - 'scanners/**'
       - 'handlers/**'
-      - 'chaos-providers/**'
+      - 'agents/**'
   workflow_dispatch:
     inputs:
       manifest_dir:
@@ -21,7 +23,7 @@ concurrency:
 
 permissions:
   contents: read
-  id-token: write   # a module publish is verified by GitHub's OIDC token
+  id-token: write   # every publish is verified by GitHub's OIDC token
 
 jobs:
   authorize:
@@ -64,10 +66,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Resolve manifests
         id: resolve
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             DIR="${{ inputs.manifest_dir }}"
@@ -79,8 +83,14 @@ jobs:
             exit 0
           fi
 
-          changed=$(git diff --name-only --diff-filter=AM HEAD^ HEAD \
-            | grep -E '^(modules|scanners|handlers|chaos-providers)/' || true)
+          # The push's whole range, not just its last commit. A push that
+          # creates the branch has no `before`, so every manifest is listed.
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            files=$(find modules scanners handlers agents -name manifest.yaml -type f 2>/dev/null)
+          else
+            files=$(git diff --name-only --diff-filter=AM "$BEFORE" "${{ github.sha }}")
+          fi
+          changed=$(echo "$files" | grep -E '^(modules|scanners|handlers|agents)/' || true)
           if [ -z "$changed" ]; then
             echo "No manifest changes detected"
             echo "manifests_found=false" >> $GITHUB_OUTPUT
@@ -120,11 +130,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: prepare
     if: always() && needs.prepare.result == 'success' && needs.prepare.outputs.manifests_found == 'true'
+    environment: ${{ github.ref_name == 'main' && 'prod' || 'preview' }}
 
     strategy:
       matrix:
         manifest_dir: ${{ fromJson(needs.prepare.outputs.manifests_json) }}
       fail-fast: false
+
+    env:
+      # The Lace CLI reads its API base URL from LACE_AUTH_URL.
+      LACE_AUTH_URL: ${{ github.ref_name == 'main' && 'https://lace.cloud' || 'https://preview.lace.cloud' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -140,9 +155,11 @@ jobs:
 
       - name: Authenticate
         env:
-          LACE_TOKEN: ${{ secrets.LACE_REGISTRY_KEY }}
+          # An environment secret: prod and preview each hold their own.
+          LACE_TOKEN: ${{ secrets.LACE_TOKEN }}
         run: |
-          [ -z "$LACE_TOKEN" ] && { echo "::error::LACE_REGISTRY_KEY secret not set"; exit 1; }
+          [ -z "$LACE_TOKEN" ] && { echo "::error::LACE_TOKEN secret not set in the ${{ github.ref_name == 'main' && 'prod' || 'preview' }} environment"; exit 1; }
+          echo "Publishing to $LACE_AUTH_URL"
           lace whoami
 
       - name: Resolve axis
@@ -154,14 +171,14 @@ jobs:
             modules)         AXIS=module ;;
             scanners)        AXIS=scanner ;;
             handlers)        AXIS=handler ;;
-            chaos-providers) AXIS=chaos_provider ;;
+            agents)          AXIS=agent ;;
             *)               echo "::error::Unknown axis dir: $AXIS_DIR"; exit 1 ;;
           esac
           echo "axis=$AXIS" >> $GITHUB_OUTPUT
 
       - name: Register
         env:
-          LACE_TOKEN: ${{ secrets.LACE_REGISTRY_KEY }}
+          LACE_TOKEN: ${{ secrets.LACE_TOKEN }}
         run: |
           DIR="${{ matrix.manifest_dir }}"
           AXIS="${{ steps.axis.outputs.axis }}"

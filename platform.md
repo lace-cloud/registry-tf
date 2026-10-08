@@ -4,7 +4,7 @@ Internal reference for `@lace-cloud/platform-team`. For contributor-facing docs,
 
 ## CI Workflows
 
-Two workflows: **CI** (PR gate) → **Publish** (push to `main`).
+Two workflows: **CI** (PR gate) → **Publish** (push to `develop` → preview, push to `main` → production).
 
 ### CI (`ci.yml`)
 
@@ -14,7 +14,7 @@ Runs on PRs targeting `develop` or `main`.
 
 | Job              | What it does                                                                                                                                                  |
 |------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Detect Manifests | `tj-actions/changed-files` over `{modules,scanners,handlers,chaos-providers}/**`. Walks up to find `manifest.yaml` roots. Fails if any changed file is orphaned (no `manifest.yaml` ancestor). |
+| Detect Manifests | `tj-actions/changed-files` over `{modules,scanners,handlers,agents}/**`. Walks up to find `manifest.yaml` roots. Fails if any changed file is orphaned (no `manifest.yaml` ancestor). |
 | Validate         | Matrix per manifest dir (`fail-fast: false`). Per-axis steps below.                                                                                            |
 | Summary          | Rollup gate — reports pass/fail to PR.                                                                                                                        |
 
@@ -35,7 +35,7 @@ The deep zod validation runs server-side at publish time. CI is a fail-fast enve
 
 | Trigger             | Condition                                                                                  | Authorization                                |
 |---------------------|--------------------------------------------------------------------------------------------|----------------------------------------------|
-| Push to `main`      | `paths: [modules/**, scanners/**, handlers/**, chaos-providers/**]`                       | Already gated by branch protection.          |
+| Push to `develop` / `main` | `paths: [modules/**, scanners/**, handlers/**, agents/**]`                          | Already gated by branch protection.          |
 | `workflow_dispatch` | Manual, accepts `manifest_dir` input                                                       | Requires `@lace-cloud/platform-team` member. |
 
 **Jobs:** Authorize (conditional) → Prepare → Register (matrix) → Summary.
@@ -43,8 +43,8 @@ The deep zod validation runs server-side at publish time. CI is a fail-fast enve
 | Job       | Details                                                                                                                                                                                                                                                                                                  |
 |-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Authorize | Runs only for `workflow_dispatch`. Generates GitHub App token (`LACE_ORG_CI_APP_ID` + `LACE_ORG_CI_PRIVATE_KEY`), checks actor's membership in `platform-team`.                                                                                                                                          |
-| Prepare   | For push: `git diff HEAD^ HEAD` over the four axis paths to find changed manifest dirs (walk-up to `manifest.yaml`). For dispatch: validates the provided `manifest_dir` exists.                                                                                                                         |
-| Register  | Matrix per manifest dir (`fail-fast: false`). Each: install the pinned Lace CLI (signed installer, minisign) → `lace whoami` → resolve axis from the dir prefix → `lace registry register --axis <axis> --manifest <dir>/manifest.yaml --readme <dir>/README.md` (a module is validated first and registered with `--path <dir>`). Auth: repo secret `LACE_REGISTRY_KEY`, passed to the CLI as `LACE_TOKEN`, the env var it reads. |
+| Prepare   | For push: `git diff <before> <sha>` (the whole push) over the four axis paths to find changed manifest dirs (walk-up to `manifest.yaml`); a push that creates the branch lists every manifest. For dispatch: validates the provided `manifest_dir` exists.                                                                                                                         |
+| Register  | Matrix per manifest dir (`fail-fast: false`). Each: install the pinned Lace CLI (signed installer, minisign) → `lace whoami` → resolve axis from the dir prefix → `lace registry register --axis <axis> --manifest <dir>/manifest.yaml --readme <dir>/README.md` (a module is validated first and registered with `--path <dir>`). Runs in GitHub environment `prod` (ref `main`, `LACE_AUTH_URL=https://lace.cloud`) or `preview` (any other ref, `LACE_AUTH_URL=https://preview.lace.cloud`). Auth: that environment's `LACE_TOKEN` secret, the env var the CLI reads. |
 | Summary   | Reports registered manifests and result.                                                                                                                                                                                                                                                                  |
 
 **Concurrency:** `publish-${{ github.ref }}`, does **not** cancel in-progress (every merge must publish).
@@ -60,27 +60,27 @@ Both `main` and `develop` are protected via GitHub rulesets:
 | Required status checks     | `Summary` | `Summary` |
 | CODEOWNERS review          | Yes       | Yes       |
 
-CODEOWNERS pins `*` and the four axis subdirs to `@lace-cloud/platform-team`. Partner namespaces (e.g. `scanners/wiz/`, `chaos-providers/gremlin/`) are added with paired CODEOWNERS entries when partnerships land.
+CODEOWNERS pins `*` and the four axis subdirs to `@lace-cloud/platform-team`. Partner namespaces (e.g. `scanners/wiz/`, `handlers/snyk/`) are added with paired CODEOWNERS entries when partnerships land.
 
 ## Secrets
 
 | Secret                       | Purpose                                                                                       | Used by                       |
 |------------------------------|-----------------------------------------------------------------------------------------------|-------------------------------|
-| `LACE_REGISTRY_KEY`      | Service-token API key with `REGISTRY_PUBLISH` scope. Publishes public manifests (`org_id = NULL`). | `publish.yml` (Register job)  |
+| `LACE_TOKEN` (environment secret in `prod` and in `preview`) | Service token from that Lace environment's `lace` org with the `registry:publish` scope. Publishes public manifests (`org_id = NULL`). Added by a repo admin. | `publish.yml` (Register job)  |
 | `LACE_ORG_CI_APP_ID`         | GitHub App ID for org API access (membership lookup).                                         | `publish.yml` (Authorize job) |
 | `LACE_ORG_CI_PRIVATE_KEY`    | GitHub App private key.                                                                       | `publish.yml` (Authorize job) |
 
 ### Registry Bot
 
 - **User:** `Lace Registry Bot` (`registry-bot@lace.cloud`).
-- **API Key:** service token with the `REGISTRY_PUBLISH` scope (publishes public manifests). Stored as repo secret `LACE_REGISTRY_KEY`.
+- **API Key:** one service token per Lace environment, with the `registry:publish` scope (publishes public manifests). Stored as the `LACE_TOKEN` environment secret of `prod` and of `preview`.
 - Publishes public manifests via `POST /api/v1/registry/index`. The endpoint clamps `org_id = NULL` on the resulting row.
 
 ## Troubleshooting
 
 ### CI validation passes but publish fails
 
-The Register job requires `LACE_REGISTRY_KEY`. Verify the secret is set and the service token is active + scoped to `REGISTRY_PUBLISH`.
+The Register job requires `LACE_TOKEN` in the environment it ran in (`prod` or `preview`). Verify the secret is set there and the service token is active, belongs to that environment's `lace` org, and is scoped to `registry:publish`.
 
 ### Manual dispatch authorization failure
 

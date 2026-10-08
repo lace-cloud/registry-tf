@@ -1,6 +1,6 @@
 # Contributing
 
-This repo holds the public `lace/*` manifests for four axes: Terraform modules, observatory scanners, handlers, and chaos providers. PRs are reviewed by `@lace-cloud/platform-team`.
+This repo holds the public `lace/*` manifests for four axes: Terraform modules, observatory scanners, handlers, and agents. PRs are reviewed by `@lace-cloud/platform-team`.
 
 ## Folder shape
 
@@ -9,7 +9,7 @@ This repo holds the public `lace/*` manifests for four axes: Terraform modules, 
 <axis>/<author>/<name>/README.md
 ```
 
-`<axis>` ∈ {`modules`, `scanners`, `handlers`, `chaos-providers`}. `<author>` is `lace` for first-party manifests; partner namespaces (e.g. `wiz`, `snyk`, `gremlin`) are added with paired CODEOWNERS entries when partnerships land.
+`<axis>` ∈ {`modules`, `scanners`, `handlers`, `agents`}. `<author>` is `lace` for first-party manifests — Lace's defaults live under `<axis>/lace/`, and merging to `develop` publishes them to preview, merging to `main` to production (see the README's "Lace defaults and environments"); partner namespaces (e.g. `wiz`, `snyk`, `gremlin`) are added with paired CODEOWNERS entries when partnerships land.
 
 Modules carry `*.tf` files alongside `manifest.yaml` and may nest under a cloud-system tier (e.g. `modules/aws/<name>/main.tf`). Non-module axes are manifest + README only.
 
@@ -40,11 +40,10 @@ Modules carry `*.tf` files alongside `manifest.yaml` and may nest under a cloud-
   - `'manifest'`: a single URL pinned in the manifest (`endpointUrl` required); every install dispatches there.
   - `'install'`: the URL lives per-org on `installed_handler.endpoint_url`; the manifest must NOT declare `endpointUrl`.
 
-### `chaos-providers/`
+### `agents/`
 
-- `manifest.yaml` envelope as above with `axis: chaos_provider`.
-- `targetCatalog.targets` lists `(resourceType, uriPattern, actions, rollbackKinds)` tuples covering every action the provider supports.
-- `callbackSigning: { kind: hmac_sha256 }` for customer-hosted providers; `{ kind: none }` is reserved for `runtime: { location: lace-managed }`.
+- `manifest.yaml` envelope as above with `axis: agent`.
+- `trigger: { producer, hooks: { available, default } }` and `emits: { manifestation }`.
 
 ## Review checklist
 
