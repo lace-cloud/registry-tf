@@ -1,0 +1,42 @@
+apiVersion: '1'
+axis: handler
+author: lace
+name: incident-opener
+version: v1.0.1
+displayName: Incident Opener
+description: |
+  Holds at most one open incident per install: a finding batch at or above
+  the configured severity floor opens it and later batches link into it;
+  resolves once every linked finding is resolved. Observes the
+  scanner-producer non-run Hook (findings.batch_created / finding.resolved /
+  findings.batch_resolved) rather than a run-task hook.
+categories:
+  - incident-response
+  - alerting
+runtime:
+  location: in-tree
+  handlerId: lace/incident-opener
+endpointSource: in_tree
+verdictMode: sync
+timeoutSeconds: 30
+signing:
+  kind: none
+hooks:
+  available: []
+  default: []
+configSchema:
+  type: object
+  additionalProperties: false
+  properties:
+    minSeverity:
+      type: string
+      enum:
+        - critical
+        - high
+        - medium
+        - low
+      default: critical
+    assignToUserId:
+      type: string
+    assignToTeamDesignation:
+      type: string

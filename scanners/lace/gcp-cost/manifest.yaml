@@ -1,15 +1,15 @@
 apiVersion: "1"
 axis: scanner
 author: lace
-name: aws-cost
+name: gcp-cost
 version: v1.0.1
-displayName: AWS Cost Scanner
-description: Daily/monthly cost across linked AWS accounts. Emits cost.daily time series, cost.attribution_by_team time series, and cost.monthly_trend snapshots.
+displayName: GCP Cost Scanner
+description: Daily/monthly cost across linked GCP projects from the BigQuery billing export. Emits cost.daily time series and cost.monthly_trend snapshots; surfaces cost-overage findings on threshold breach.
 categories:
   - cost
-  - aws
+  - gcp
   - finops
-provider: aws
+provider: gcp
 runtime:
   location: in-tree
 configSchema:
@@ -35,19 +35,6 @@ outputs:
           - service
           - account
         metrics:
+          - ListCost
           - EffectiveCost
-          - BilledCost
-      cost.attribution_by_team:
-        granularity: daily
-        dimensions:
-          - teamId
-        metrics:
-          - EffectiveCost
-      cost.forecast:
-        granularity: monthly
-        dimensions: []
-        metrics:
-          - forecastAmortizedCost
-          - forecastLowerBound
-          - forecastUpperBound
 authors: []

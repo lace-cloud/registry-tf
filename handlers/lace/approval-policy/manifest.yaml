@@ -1,0 +1,23 @@
+apiVersion: '1'
+axis: handler
+author: lace
+name: approval-policy
+version: v1.0.1
+displayName: Approval Policy
+runtime:
+  location: in-tree
+  handlerId: lace/approval-policy
+endpointSource: in_tree
+verdictMode: async
+timeoutSeconds: 30
+signing:
+  kind: none
+hooks:
+  available:
+    - pre_apply
+  default:
+    - pre_apply
+configSchema:
+  type: object
+  additionalProperties: true
+  properties: {}

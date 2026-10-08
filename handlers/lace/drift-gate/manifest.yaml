@@ -1,0 +1,23 @@
+apiVersion: '1'
+axis: handler
+author: lace
+name: drift-gate
+version: v1.0.1
+displayName: Drift Gate
+runtime:
+  location: in-tree
+  handlerId: lace/drift-gate
+endpointSource: in_tree
+verdictMode: sync
+timeoutSeconds: 30
+signing:
+  kind: none
+hooks:
+  available:
+    - pre_apply
+  default:
+    - pre_apply
+configSchema:
+  type: object
+  additionalProperties: true
+  properties: {}
