@@ -1,29 +1,16 @@
-# `internal` is consumer-chosen — public ALBs are this module's primary use
-# case. Header hygiene is likewise exposed to the consumer.
-#tfsec:ignore:AVD-AWS-0053
-#tfsec:ignore:AVD-AWS-0052
-resource "aws_lb" "this" {
-  name               = var.name
-  internal           = var.internal
-  load_balancer_type = "application"
-  security_groups    = var.security_group_ids
-  subnets            = var.subnet_ids
-
-  enable_deletion_protection = var.enable_deletion_protection
-
-  dynamic "access_logs" {
-    for_each = var.access_logs_bucket != null ? [1] : []
-    content {
-      bucket  = var.access_logs_bucket
-      prefix  = var.access_logs_prefix
-      enabled = true
-    }
-  }
-
-  tags = merge(
-    {
-      Name = var.name
-    },
-    var.tags
-  )
+module "aws_lb_this" {
+  source                                = "./aws_lb_this"
+  access_logs_bucket                    = var.access_logs_bucket
+  access_logs_bucket____null____1______ = var.access_logs_bucket != null ? [1] : []
+  access_logs_prefix                    = var.access_logs_prefix
+  enable_deletion_protection            = var.enable_deletion_protection
+  internal                              = var.internal
+  name                                  = var.name
+  security_group_ids                    = var.security_group_ids
+  subnet_ids                            = var.subnet_ids
+  tags                                  = var.tags
+}
+moved {
+  from = aws_lb.this
+  to   = module.aws_lb_this.aws_lb.this
 }

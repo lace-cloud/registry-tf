@@ -1,24 +1,23 @@
-resource "aws_cloudwatch_metric_alarm" "this" {
-  alarm_name                = var.alarm_name
+module "aws_cloudwatch_metric_alarm_this" {
+  source                    = "./aws_cloudwatch_metric_alarm_this"
+  alarm_actions             = var.alarm_actions
   alarm_description         = var.alarm_description
+  alarm_name                = var.alarm_name
   comparison_operator       = var.comparison_operator
-  evaluation_periods        = var.evaluation_periods
-  metric_name               = var.metric_name
-  namespace                 = var.namespace
-  period                    = var.period
-  statistic                 = var.statistic
-  threshold                 = var.threshold
-  treat_missing_data        = var.treat_missing_data
   datapoints_to_alarm       = var.datapoints_to_alarm
   dimensions                = var.dimensions
-  alarm_actions             = var.alarm_actions
-  ok_actions                = var.ok_actions
+  evaluation_periods        = var.evaluation_periods
   insufficient_data_actions = var.insufficient_data_actions
-
-  tags = merge(
-    {
-      Name = var.alarm_name
-    },
-    var.tags
-  )
+  metric_name               = var.metric_name
+  namespace                 = var.namespace
+  ok_actions                = var.ok_actions
+  period                    = var.period
+  statistic                 = var.statistic
+  tags                      = var.tags
+  threshold                 = var.threshold
+  treat_missing_data        = var.treat_missing_data
+}
+moved {
+  from = aws_cloudwatch_metric_alarm.this
+  to   = module.aws_cloudwatch_metric_alarm_this.aws_cloudwatch_metric_alarm.this
 }

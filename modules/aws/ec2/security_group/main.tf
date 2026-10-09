@@ -1,41 +1,13 @@
-resource "aws_security_group" "this" {
-  name        = var.name
-  description = var.description
-  vpc_id      = var.vpc_id
-
-  dynamic "ingress" {
-    for_each = var.ingress_rules
-    content {
-      from_port       = ingress.value.from_port
-      to_port         = ingress.value.to_port
-      protocol        = ingress.value.protocol
-      cidr_blocks     = lookup(ingress.value, "cidr_blocks", null)
-      security_groups = lookup(ingress.value, "security_groups", null)
-      self            = lookup(ingress.value, "self", null)
-      description     = lookup(ingress.value, "description", null)
-    }
-  }
-
-  dynamic "egress" {
-    for_each = var.egress_rules
-    content {
-      from_port = egress.value.from_port
-      to_port   = egress.value.to_port
-      protocol  = egress.value.protocol
-      # Egress CIDRs are consumer-supplied; a generic SG module cannot forbid
-      # 0.0.0.0/0 — that policy belongs to the consuming stack's gates.
-      #tfsec:ignore:AVD-AWS-0104
-      cidr_blocks     = lookup(egress.value, "cidr_blocks", null)
-      security_groups = lookup(egress.value, "security_groups", null)
-      self            = lookup(egress.value, "self", null)
-      description     = lookup(egress.value, "description", null)
-    }
-  }
-
-  tags = merge(
-    {
-      Name = var.name
-    },
-    var.tags
-  )
+module "aws_security_group_this" {
+  source        = "./aws_security_group_this"
+  description   = var.description
+  egress_rules  = var.egress_rules
+  ingress_rules = var.ingress_rules
+  name          = var.name
+  tags          = var.tags
+  vpc_id        = var.vpc_id
+}
+moved {
+  from = aws_security_group.this
+  to   = module.aws_security_group_this.aws_security_group.this
 }
