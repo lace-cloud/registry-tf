@@ -31,11 +31,9 @@ cloud-system tier (`modules/aws/<name>/`). Lace's defaults live under
 |---|---|---|
 | `check.yml` | a pull request to `develop` or `main` | `registry-check` checks every manifest the pull request changes: the envelope fields, a version bump against the base branch, and for a module a `lace module validate` verdict of `already-lace-style`. |
 | `publish.yml` | a push to `main` | `registry-publish` publishes every manifest the push changed to production, https://lace.cloud, with `LACE_TOKEN`. |
-| `publish-preview.yml` | a push to `develop` | The same action publishes to preview, https://preview.lace.cloud, with `LACE_PREVIEW_TOKEN`. |
 
 `check.yml` and `publish.yml` are the two files the publishing guide gives every
-organization. The preview caller is the one addition, because Lace runs two
-environments.
+organization; this repository runs exactly those two.
 
 ## Branches
 
@@ -43,23 +41,16 @@ environments.
 feature/* → develop → main
 ```
 
-A pull request into `develop` is checked; merging it publishes to preview. A
-`develop` → `main` pull request is checked again; merging it publishes to
-production.
+A pull request into `develop` is checked. A `develop` → `main` pull request is
+checked again; merging it publishes to production.
 
 ## Tokens
 
-Two repository secrets, each a service token minted in one Lace environment's
-`lace` organization with the `registry:publish` scope, naming
-`lace-cloud/registry` as the repository it publishes from:
-
-| Secret | Environment | Branch the token names |
-|---|---|---|
-| `LACE_TOKEN` | production | `main` |
-| `LACE_PREVIEW_TOKEN` | preview | `develop` |
-
-A token publishes only from a run of this repository on its own branch. Whoever
-can push to `main` or `develop` can publish, so both branches are protected.
+One repository secret, `LACE_TOKEN`: a service token minted in the `lace`
+organization with the `registry:publish` scope, naming `lace-cloud/registry` as
+the repository and `main` as the branch it publishes from. The token publishes
+only from a run of this repository on `main`, so whoever can push to `main` can
+publish, and `main` is protected.
 
 ## Manifest envelope
 
