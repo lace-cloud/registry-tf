@@ -11,6 +11,7 @@ categories:
 runtime:
   location: in-tree
   handlerId: lace/datadog-notifier
+  installSecret: required
 verdictMode: sync
 timeoutSeconds: 10
 signing:

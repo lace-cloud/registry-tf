@@ -12,6 +12,7 @@ categories:
 runtime:
   location: in-tree
   handlerId: lace/snyk-bridge
+  installSecret: required
 verdictMode: sync
 timeoutSeconds: 30
 signing:
