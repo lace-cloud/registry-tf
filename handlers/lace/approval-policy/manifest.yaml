@@ -12,7 +12,6 @@ categories:
 runtime:
   location: in-tree
   handlerId: lace/approval-policy
-endpointSource: in_tree
 verdictMode: async
 timeoutSeconds: 30
 signing:

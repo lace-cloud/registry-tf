@@ -12,7 +12,6 @@ categories:
 runtime:
   location: in-tree
   handlerId: lace/chaos
-endpointSource: in_tree
 verdictMode: sync
 timeoutSeconds: 30
 signing:
