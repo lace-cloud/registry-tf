@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: iam-policy
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS IAM Policy"
 description: "AWS IAM policy with configurable policy document and tags"
 categories: [iam, security, permissions]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

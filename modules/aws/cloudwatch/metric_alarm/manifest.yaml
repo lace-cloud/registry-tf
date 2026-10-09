@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: cloudwatch-metric-alarm
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS CloudWatch Metric Alarm"
 description: "AWS CloudWatch Metric Alarm for monitoring and alerting on AWS resource metrics"
 categories: [monitoring, cloudwatch, alerting]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

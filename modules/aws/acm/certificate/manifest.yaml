@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: acm-certificate
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS ACM Certificate"
 description: "AWS ACM certificate with DNS or EMAIL validation"
 categories: [acm, security, networking]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

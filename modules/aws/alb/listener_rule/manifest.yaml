@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: alb-listener-rule
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS ALB Listener Rule"
 description: "AWS ALB listener rule with host/path conditions and forward, redirect, or fixed-response actions"
 categories: [networking, load-balancing, alb]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws
