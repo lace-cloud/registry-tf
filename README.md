@@ -1,109 +1,120 @@
 # registry
 
-The public Lace registry monorepo. One repo, four artifact axes, one publish endpoint.
+Lace's own registry repository. The `lace` organization publishes the default
+modules, scanners, handlers and agents that every Lace organization can install
+from here. It publishes through the same two GitHub Actions any organization's
+registry repository uses: [`lace-cloud/registry-check`](https://github.com/lace-cloud/registry-check)
+on pull requests and [`lace-cloud/registry-publish`](https://github.com/lace-cloud/registry-publish)
+on merges.
 
-## What lives here
+To run a registry repository for your own organization, follow
+[Publishing to the registry from CI](https://lace.cloud/docs/registry-publishing).
+
+## Layout
 
 ```
 registry/
-├── modules/                ← Terraform modules
-├── scanners/               ← Observatory scanners (drift, cost, anomalies, …)
-├── handlers/               ← Handlers (Run-lifecycle gates: pre/post-plan + apply)
-└── chaos-providers/        ← Chaos engineering providers (AWS, Wiz, Gremlin, …)
+├── modules/     ← Terraform modules
+├── scanners/    ← Observatory scanners
+├── handlers/    ← Handlers (Run gates)
+└── agents/      ← Agents
 ```
 
-Each axis subdir holds `<author>/<name>/{manifest.yaml, README.md, …}`. Modules additionally carry `*.tf` siblings and may nest under a cloud-system tier (`modules/aws/<name>/`).
+Each artifact is a directory `<axis>/<author>/<name>/` holding `manifest.yaml`
+and `README.md`. A module also carries its `*.tf` files and may nest under a
+cloud-system tier (`modules/aws/<name>/`). Lace's defaults live under
+`<axis>/lace/`.
 
-## Branch strategy
+## Workflows
+
+| File | Runs on | What it does |
+|---|---|---|
+| `check.yml` | a pull request to `develop` or `main` | `registry-check` checks every manifest the pull request changes: the envelope fields, a version bump against the base branch, and for a module a `lace module validate` verdict of `already-lace-style`. |
+| `publish.yml` | a push to `main` | `registry-publish` publishes every manifest the push changed to production, https://lace.cloud, with `LACE_TOKEN`. |
+
+`check.yml` and `publish.yml` are the two files the publishing guide gives every
+organization; this repository runs exactly those two.
+
+## Branches
 
 ```
 feature/* → develop → main
 ```
 
-| Branch     | Purpose                                                                  |
-|------------|--------------------------------------------------------------------------|
-| `feature/*` | Manifest authoring — branch from `develop`                              |
-| `develop`   | Integration. CI validates structure + envelope + Terraform on PR.       |
-| `main`      | Production. Push to `main` publishes to the registry.                   |
+A pull request into `develop` is checked. A `develop` → `main` pull request is
+checked again; merging it publishes to production.
 
-Both branches require PR + passing checks. Changes to `.github/` need `@lace-cloud/platform-team` review (CODEOWNERS).
+## Tokens
+
+One repository secret, `LACE_TOKEN`: a service token minted in the `lace`
+organization with the `registry:publish` scope, naming `lace-cloud/registry` as
+the repository and `main` as the branch it publishes from. The token publishes
+only from a run of this repository on `main`, so whoever can push to `main` can
+publish, and `main` is protected.
 
 ## Manifest envelope
 
-Every artifact ships a `manifest.yaml` with the same base envelope:
+Every artifact's `manifest.yaml` starts with the same envelope:
 
 ```yaml
 apiVersion: '1'
-axis: module | scanner | handler | chaos_provider
-author: lace                       # kebab-case (1-64 chars)
-name: aws-iam-role                 # kebab-case (1-64 chars), unique within axis+author
-version: v1.0.0                    # semver, must be 'v'-prefixed
-displayName: "AWS IAM Role"        # human-readable (1-96 chars)
-description: "..."                 # optional
-categories: [iam, security]        # optional
-configSchema: { ... }              # JSON-Schema for per-install config
+axis: module | scanner | handler | agent
+author: lace                  # kebab-case, 1-64 characters
+name: aws-iam-role            # kebab-case, 1-64 characters, unique within axis and author
+version: v1.0.0               # v-prefixed semver
+displayName: AWS IAM Role     # 1-96 characters
+description: ...              # optional
+categories: [iam, security]   # optional
+configSchema: { ... }         # JSON Schema for per-install config
 runtime:
-  location: lace-managed | customer-hosted
-  # customer-hosted requires `dispatch: lace-pull | customer-push`
-authors: ["Lace Team <team@lace.cloud>"]
-# Axis-specific fields layered on top:
-# - module: bundle.{system, modulePath, gitUrl, commitSha, ...}
-# - scanner: outputs.{findings, snapshots, time_series, inventory}
-# - handler: hooks.{available, default}, endpointSource, signing, verdictMode
-# - chaos_provider: targetCatalog, callbackSigning
+  location: in-tree | external
+  # external also declares dispatch: lace-pull | customer-push | customer-poll
 ```
 
-Validation: per-axis zod schemas in `apps/api/src/lib/registry/axes/*.ts` are the source of truth. CI runs an envelope-shape pre-check; the API does deep validation at publish time.
+Each axis adds its own fields on top. The publish endpoint validates each
+manifest against its axis when it is published; the
+[registry docs](https://lace.cloud/docs/registry) list what each axis needs.
 
-## How publishing works
+## Publishing rules
 
-A push to `main` that touches `modules/**`, `scanners/**`, `handlers/**`, or `chaos-providers/**` triggers `publish.yml`:
-
-1. Detect changed `manifest.yaml` directories.
-2. Install the pinned `lace` CLI with the signed installer from `releases.lace.cloud`.
-3. Per manifest: `lace registry register --axis <axis> --manifest <dir>/manifest.yaml --readme <dir>/README.md`; a module is validated first and published with `--path <dir>`, which the job's GitHub OIDC token attests.
-4. The CLI reads its credential from `LACE_TOKEN`, which the workflow sets from the `LACE_REGISTRY_KEY` repo secret, and POSTs to `/api/v1/registry/index` with it.
-
-`LACE_REGISTRY_KEY` is a service-token API key with the `REGISTRY_PUBLISH` scope (publishes public manifests, `org_id = NULL`). It is held only by this repo's CI.
-
-The publish endpoint is idempotent on `(axis, author, name, version) + sha256(manifest.yaml)`. Re-publishing identical content is a no-op (`result: 'unchanged'`). Re-publishing a different `manifest.yaml` at the same `(axis, author, name, version)` is rejected (409): manifests are immutable per version.
+- Publishing is idempotent on `(axis, author, name, version)` and the manifest's
+  content. Re-publishing identical content reports `unchanged`.
+- A manifest is immutable per version. Publishing different content at a
+  version that already exists is refused with `409`. Bump `version` to ship a
+  change.
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the per-axis acceptance criteria and review checklist.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```bash
 git checkout develop && git pull
 git checkout -b feature/scanner-aws-foo
 mkdir -p scanners/lace/aws-foo
-# author scanners/lace/aws-foo/manifest.yaml + README.md
+# write scanners/lace/aws-foo/manifest.yaml and README.md
 git add scanners/lace/aws-foo
-git commit -m "feat(scanners): seed lace/aws-foo"
+git commit -m "feat(scanners): lace/aws-foo"
 git push -u origin feature/scanner-aws-foo
 gh pr create --base develop
 ```
 
-Once merged to `develop`, open a develop → main PR. Merging to `main` publishes.
-
-## Running a private registry
-
-Customer orgs that want PR-reviewed authoring of internal manifests use the [`registry-template`](https://github.com/lace-cloud/registry-template) repo as a starting point. Same folder structure, same workflows, same `lace registry register` CLI (the template names its secret `LACE_TOKEN`) — the only difference is the API key's scope:
-
-- **This repo (public):** key holds `REGISTRY_PUBLISH` scope. Manifests land at `org_id = NULL`, visible to every Lace org.
-- **Customer private repo:** key holds `REGISTRY_PUBLISH:org` scope. Manifests land at `org_id = <caller's org>`, visible only to that org's catalog browse.
-
-The unified publish endpoint clamps `org_id` server-side based on the bearer token's scope; the request body cannot override.
-
 ## Troubleshooting
 
-### `authentication failed` / `unauthorized`
+### The publish job fails with `publish is CI-only: refused for a run of … this token publishes from another repository` or `… another branch`
 
-Verify the `LACE_REGISTRY_KEY` repo secret is set (the workflow passes it to the CLI as `LACE_TOKEN`) and the service token has the `REGISTRY_PUBLISH` scope.
+The secret holds a token minted for another repository or branch. Mint a new
+`registry:publish` token in that environment's `lace` organization naming
+`lace-cloud/registry` and the branch in the table above, and replace the
+secret.
 
-### Manifest envelope rejected at publish
+### The publish job fails with `no token`
 
-The CI envelope check is a fast fail; the API's per-axis zod is the deep gate. If publish fails with a validation error, read the per-axis schema in [`apps/api/src/lib/registry/axes/`](https://github.com/lace-cloud/lace/tree/develop/apps/api/src/lib/registry/axes) — that's the contract.
+The secret the workflow passes is not set. Add it as in the table above.
 
-### `409: manifest at this version already published with different content`
+### The publish job fails with `401`
 
-Manifests are immutable per `(axis, author, name, version)`. Bump the `version` field and reopen the PR.
+The token in the secret was revoked or has expired. Mint a new one as above.
+
+### The publish job fails with `Manifest already published at this identity with different content`
+
+Bump `version` in the manifest and push again.

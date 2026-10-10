@@ -1,93 +1,56 @@
-resource "aws_s3_bucket" "this" {
+module "aws_s3_bucket_cors_configuration_this" {
+  source     = "./aws_s3_bucket_cors_configuration_this"
+  cors_rules = var.cors_rules
+  this_id    = module.aws_s3_bucket_this.this_id
+}
+module "aws_s3_bucket_lifecycle_configuration_this" {
+  source                          = "./aws_s3_bucket_lifecycle_configuration_this"
+  lifecycle_rules                 = var.lifecycle_rules
+  lifecycle_rules____null___1___0 = var.lifecycle_rules != null ? 1 : 0
+  this_id                         = module.aws_s3_bucket_this.this_id
+}
+module "aws_s3_bucket_public_access_block_this" {
+  source  = "./aws_s3_bucket_public_access_block_this"
+  this_id = module.aws_s3_bucket_this.this_id
+}
+module "aws_s3_bucket_server_side_encryption_configuration_this" {
+  source                                    = "./aws_s3_bucket_server_side_encryption_configuration_this"
+  kms_key_id                                = var.kms_key_id
+  kms_key_id____null____aws_kms_____AES256_ = var.kms_key_id != null ? "aws:kms" : "AES256"
+  kms_key_id____null___true___false         = var.kms_key_id != null ? true : false
+  this_id                                   = module.aws_s3_bucket_this.this_id
+}
+module "aws_s3_bucket_this" {
+  source = "./aws_s3_bucket_this"
   bucket = var.bucket
-
-  tags = merge(
-    {
-      Name = var.bucket
-    },
-    var.tags
-  )
+  tags   = var.tags
 }
-
-resource "aws_s3_bucket_versioning" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  versioning_configuration {
-    status = var.versioning_enabled ? "Enabled" : "Suspended"
-  }
+module "aws_s3_bucket_versioning_this" {
+  source                                       = "./aws_s3_bucket_versioning_this"
+  this_id                                      = module.aws_s3_bucket_this.this_id
+  versioning_enabled____Enabled_____Suspended_ = var.versioning_enabled ? "Enabled" : "Suspended"
 }
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  bucket = aws_s3_bucket.this.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm     = var.kms_key_id != null ? "aws:kms" : "AES256"
-      kms_master_key_id = var.kms_key_id
-    }
-    bucket_key_enabled = var.kms_key_id != null ? true : false
-  }
+moved {
+  from = aws_s3_bucket.this
+  to   = module.aws_s3_bucket_this.aws_s3_bucket.this
 }
-
-resource "aws_s3_bucket_public_access_block" "this" {
-  bucket                  = aws_s3_bucket.this.id
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+moved {
+  from = aws_s3_bucket_cors_configuration.this
+  to   = module.aws_s3_bucket_cors_configuration_this.aws_s3_bucket_cors_configuration.this
 }
-
-resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count  = var.lifecycle_rules != null ? 1 : 0
-  bucket = aws_s3_bucket.this.id
-
-  dynamic "rule" {
-    for_each = var.lifecycle_rules
-    content {
-      id     = rule.value.id
-      status = lookup(rule.value, "enabled", true) ? "Enabled" : "Disabled"
-
-      dynamic "filter" {
-        for_each = lookup(rule.value, "prefix", null) != null ? [1] : []
-        content {
-          prefix = rule.value.prefix
-        }
-      }
-
-      dynamic "filter" {
-        for_each = lookup(rule.value, "prefix", null) == null ? [1] : []
-        content {}
-      }
-
-      dynamic "expiration" {
-        for_each = lookup(rule.value, "expiration_days", null) != null ? [1] : []
-        content {
-          days = rule.value.expiration_days
-        }
-      }
-
-      dynamic "noncurrent_version_expiration" {
-        for_each = lookup(rule.value, "noncurrent_version_expiration_days", null) != null ? [1] : []
-        content {
-          noncurrent_days = rule.value.noncurrent_version_expiration_days
-        }
-      }
-    }
-  }
+moved {
+  from = aws_s3_bucket_lifecycle_configuration.this
+  to   = module.aws_s3_bucket_lifecycle_configuration_this.aws_s3_bucket_lifecycle_configuration.this
 }
-
-resource "aws_s3_bucket_cors_configuration" "this" {
-  count  = length(var.cors_rules) > 0 ? 1 : 0
-  bucket = aws_s3_bucket.this.id
-
-  dynamic "cors_rule" {
-    for_each = var.cors_rules
-    content {
-      allowed_headers = lookup(cors_rule.value, "allowed_headers", ["*"])
-      allowed_methods = cors_rule.value.allowed_methods
-      allowed_origins = cors_rule.value.allowed_origins
-      expose_headers  = lookup(cors_rule.value, "expose_headers", [])
-      max_age_seconds = lookup(cors_rule.value, "max_age_seconds", 3600)
-    }
-  }
+moved {
+  from = aws_s3_bucket_public_access_block.this
+  to   = module.aws_s3_bucket_public_access_block_this.aws_s3_bucket_public_access_block.this
+}
+moved {
+  from = aws_s3_bucket_server_side_encryption_configuration.this
+  to   = module.aws_s3_bucket_server_side_encryption_configuration_this.aws_s3_bucket_server_side_encryption_configuration.this
+}
+moved {
+  from = aws_s3_bucket_versioning.this
+  to   = module.aws_s3_bucket_versioning_this.aws_s3_bucket_versioning.this
 }

@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: alb-target-group
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS ALB Target Group"
 description: "AWS ALB target group with health check configuration for Fargate (IP target type)"
 categories: [networking, load-balancing, alb]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: route53-record
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS Route53 Record"
 description: "AWS Route53 DNS record supporting both standard and alias record types"
 categories: [route53, dns, networking]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

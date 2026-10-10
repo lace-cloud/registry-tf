@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: cognito-user-pool-client
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS Cognito User Pool Client"
 description: "AWS Cognito user pool app client with configurable OAuth flows, scopes, and token validity"
 categories: [cognito, auth, security]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws
