@@ -1,24 +1,22 @@
-resource "aws_secretsmanager_secret" "this" {
-  name        = var.name
-  description = var.description
-  kms_key_id  = var.kms_key_id
-
+module "aws_secretsmanager_secret_this" {
+  source                  = "./aws_secretsmanager_secret_this"
+  description             = var.description
+  kms_key_id              = var.kms_key_id
+  name                    = var.name
   recovery_window_in_days = var.recovery_window_in_days
-
-  tags = merge(
-    {
-      Name = var.name
-    },
-    var.tags
-  )
+  tags                    = var.tags
 }
-
-resource "aws_secretsmanager_secret_version" "this" {
-  count         = var.secret_string != null ? 1 : 0
-  secret_id     = aws_secretsmanager_secret.this.id
-  secret_string = var.secret_string
-
-  lifecycle {
-    ignore_changes = [secret_string]
-  }
+module "aws_secretsmanager_secret_version_this" {
+  source                        = "./aws_secretsmanager_secret_version_this"
+  secret_string                 = var.secret_string
+  secret_string____null___1___0 = var.secret_string != null ? 1 : 0
+  this_id                       = module.aws_secretsmanager_secret_this.this_id
+}
+moved {
+  from = aws_secretsmanager_secret.this
+  to   = module.aws_secretsmanager_secret_this.aws_secretsmanager_secret.this
+}
+moved {
+  from = aws_secretsmanager_secret_version.this
+  to   = module.aws_secretsmanager_secret_version_this.aws_secretsmanager_secret_version.this
 }

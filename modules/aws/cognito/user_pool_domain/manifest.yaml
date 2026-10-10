@@ -2,15 +2,13 @@ apiVersion: '1'
 axis: module
 author: lace
 name: cognito-user-pool-domain
-version: v1.0.0
+version: v1.0.1
 displayName: "AWS Cognito User Pool Domain"
 description: "AWS Cognito hosted UI domain for a user pool"
 categories: [cognito, auth, security]
 configSchema:
   type: object
   additionalProperties: true
-runtime:
-  location: lace-managed
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws

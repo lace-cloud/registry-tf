@@ -1,0 +1,210 @@
+apiVersion: '1'
+axis: handler
+author: lace
+name: content-policy
+version: v1.0.1
+displayName: Content Policy
+description: Evaluates an authored rules document against the plan at pre_apply and denies changes that violate a rule — the native DSL content gate (PDP handler), answering "is this change permitted at all" rather than approval-policy's "who must sign off".
+categories:
+  - governance
+  - gating
+  - content-policy
+runtime:
+  location: in-tree
+  handlerId: lace/content-policy
+verdictMode: sync
+timeoutSeconds: 30
+signing:
+  kind: none
+hooks:
+  available:
+    - pre_apply
+  default:
+    - pre_apply
+configSchema:
+  type: object
+  additionalProperties: false
+  properties:
+    rules:
+      type: array
+      items:
+        type: object
+        required:
+          - id
+          - when
+          - severity
+        additionalProperties: false
+        properties:
+          id:
+            type: string
+            minLength: 1
+          name:
+            type: string
+          meta:
+            type: object
+            additionalProperties: false
+            properties:
+              description:
+                type: string
+              createdVia:
+                type: string
+          scope:
+            type: object
+            additionalProperties: false
+            properties:
+              stacks:
+                type: array
+                items:
+                  type: string
+              connections:
+                type: array
+                items:
+                  type: string
+              runKinds:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - apply
+                    - destroy
+              resourceTypes:
+                type: array
+                items:
+                  type: string
+          when:
+            type: object
+            additionalProperties: false
+            properties:
+              resourceAddGte:
+                type: integer
+              resourceChangeGte:
+                type: integer
+              resourceDestroyGte:
+                type: integer
+              runKind:
+                type: string
+                enum:
+                  - apply
+                  - destroy
+              attributePath:
+                type: object
+                additionalProperties: false
+                required:
+                  - path
+                  - match
+                properties:
+                  path:
+                    type: string
+                    minLength: 1
+                  resource:
+                    type: string
+                  action:
+                    type: string
+                    enum:
+                      - create
+                      - update
+                      - delete
+                  match:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - op
+                      - value
+                    properties:
+                      op:
+                        type: string
+                        enum:
+                          - "=="
+                          - "!="
+                          - ">"
+                          - "<"
+                          - contains
+                          - matches
+                      value:
+                        type:
+                          - string
+                          - number
+                          - boolean
+                      path:
+                        type: string
+              setOp:
+                type: object
+                additionalProperties: false
+                required:
+                  - path
+                  - op
+                  - set
+                properties:
+                  path:
+                    type: string
+                    minLength: 1
+                  op:
+                    type: string
+                    enum:
+                      - any
+                      - all
+                      - intersect
+                  set:
+                    type: array
+                    items:
+                      type: string
+              comparison:
+                type: object
+                additionalProperties: false
+                required:
+                  - op
+                  - value
+                  - path
+                properties:
+                  op:
+                    type: string
+                    enum:
+                      - "=="
+                      - "!="
+                      - ">"
+                      - "<"
+                      - contains
+                      - matches
+                  value:
+                    type:
+                      - string
+                      - number
+                      - boolean
+                  path:
+                    type: string
+                    minLength: 1
+              riskFormula:
+                type: object
+                additionalProperties: false
+                required:
+                  - weights
+                  - threshold
+                properties:
+                  weights:
+                    type: object
+                    additionalProperties: false
+                    minProperties: 1
+                    properties:
+                      resource_add:
+                        type: integer
+                      resource_change:
+                        type: integer
+                      resource_destroy:
+                        type: integer
+                      iam_change:
+                        type: integer
+                      stateful_destroy:
+                        type: integer
+                  threshold:
+                    type: integer
+          severity:
+            type: string
+            enum:
+              - low
+              - medium
+              - high
+              - critical
+          message:
+            type: string
+          reason:
+            type: string

@@ -1,14 +1,12 @@
 output "arn" {
   description = "The ARN of the ACM certificate"
-  value       = aws_acm_certificate.this.arn
+  value       = module.aws_acm_certificate_this.this_arn
 }
-
 output "domain_validation_options" {
   description = "Set of domain validation objects used to complete DNS validation"
-  value       = aws_acm_certificate.this.domain_validation_options
+  value       = module.aws_acm_certificate_this.this_domain_validation_options
 }
-
 output "status" {
   description = "The status of the certificate"
-  value       = aws_acm_certificate.this.status
+  value       = module.aws_acm_certificate_this.this_status
 }
