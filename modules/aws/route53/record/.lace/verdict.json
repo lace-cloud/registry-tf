@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "3",
+  "treeHash": "81135287ca52b6e7c773d56f97c9a9eb8f10004b1c243e2641be30a10d334178",
+  "verdict": "already-lace-style",
+  "certifierVersion": "v2.40.0",
+  "bundle": {
+    "length": 2802,
+    "sha256": "bef1c684139e5b95c92d36e67f358c654308e58cc5779d53830d54267993cf49"
+  },
+  "modules": []
+}
