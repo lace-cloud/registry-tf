@@ -1,0 +1,45 @@
+{
+  "treeHash": "294ff4b0105723be7b31aa6d49ba5c21801baef2c11c55f5b7767898b85974e1",
+  "entries": [
+    {
+      "rel": "aws_lb_this/main.tf",
+      "size": 594,
+      "sha256": "40aad453909a462aaf205f7319b6c3b259fa4f6ed8239ec16513efd1da4475a7"
+    },
+    {
+      "rel": "aws_lb_this/outputs.tf",
+      "size": 208,
+      "sha256": "520e57b19fb5dc9401362fdb62f6d9fed5d0c668145843b1cdff35f7127f2134"
+    },
+    {
+      "rel": "aws_lb_this/variables.tf",
+      "size": 510,
+      "sha256": "9475149be78f8be7c7c6a2f55075ccbe59e455cef10a44a0bfb0bb0d25a3649f"
+    },
+    {
+      "rel": "main.tf",
+      "size": 720,
+      "sha256": "f047efe6308b465c3139a2d6399f0281790792498818d2c5cadcb7f7b172e117"
+    },
+    {
+      "rel": "manifest.yaml",
+      "size": 869,
+      "sha256": "082d4fefc60782d7fede0e11da0ff0b07f8c9e09d5320f5dedbc2b2a3bbcfeec"
+    },
+    {
+      "rel": "outputs.tf",
+      "size": 433,
+      "sha256": "bb83289eeb4987788a10ca83721171b486845510802d0fc6899e4865c31525f6"
+    },
+    {
+      "rel": "variables.tf",
+      "size": 1025,
+      "sha256": "9210b7d673b4ed08c0107fa08efbe99d35ea7bc187c06a48cdde1ce121874ae9"
+    },
+    {
+      "rel": "versions.tf",
+      "size": 41,
+      "sha256": "02c716237c9d7b95a9bb7c2f128ceb13d37dd94167d1a310045ee82dd6a4fd45"
+    }
+  ]
+}

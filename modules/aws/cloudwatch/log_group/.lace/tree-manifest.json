@@ -1,0 +1,45 @@
+{
+  "treeHash": "928cf3260880d86fe6eb32e5e706f345201e6111302e99e48e901b2f767d149b",
+  "entries": [
+    {
+      "rel": "aws_cloudwatch_log_group_this/main.tf",
+      "size": 308,
+      "sha256": "352c8ffb25ec73fb070a210413730dfdd37b66c6f8e30135a8eba7c6026a85e3"
+    },
+    {
+      "rel": "aws_cloudwatch_log_group_this/outputs.tf",
+      "size": 134,
+      "sha256": "7d4942bcbf03e068fbf373d34c88ad5c3dd2348e50aaf5ba58c598771e9927b6"
+    },
+    {
+      "rel": "aws_cloudwatch_log_group_this/variables.tf",
+      "size": 257,
+      "sha256": "03d09e71a317cb5a2417150d1689e379dd7cb73ff7d879c6a7b555841b6b83e5"
+    },
+    {
+      "rel": "main.tf",
+      "size": 448,
+      "sha256": "f54415541957535a194754512c608be44a9cc17564dab81591f918f7087c7276"
+    },
+    {
+      "rel": "manifest.yaml",
+      "size": 783,
+      "sha256": "9331299e8d5b67df0d375568d874bbf7f10bfeedd0d20197accc799d8a5cb571"
+    },
+    {
+      "rel": "outputs.tf",
+      "size": 281,
+      "sha256": "0be347423f8ce299d644fb8653935bd9e4611056cd4c8741d45e63cbbd57be8a"
+    },
+    {
+      "rel": "variables.tf",
+      "size": 759,
+      "sha256": "1b05e1b4f50d01474f3def9aa941c088b1d321277766a74da120f46f6fef2267"
+    },
+    {
+      "rel": "versions.tf",
+      "size": 41,
+      "sha256": "02c716237c9d7b95a9bb7c2f128ceb13d37dd94167d1a310045ee82dd6a4fd45"
+    }
+  ]
+}

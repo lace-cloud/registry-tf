@@ -1,0 +1,50 @@
+{
+  "treeHash": "c23faf3a652ddaa522274f528cfa8a41b5e36e0fb1e02e669612ef4cb5cf24c6",
+  "entries": [
+    {
+      "rel": "aws_acm_certificate_this/main.tf",
+      "size": 318,
+      "sha256": "bd3ff7b60286f39bee8f8268e05603b6bc50b4db56d7368177290f92e8df974a"
+    },
+    {
+      "rel": "aws_acm_certificate_this/outputs.tf",
+      "size": 233,
+      "sha256": "23cdf445116ec04e71250dbbca6c7a39c7f08e3e117cb65794bcb41b37ae188c"
+    },
+    {
+      "rel": "aws_acm_certificate_this/variables.tf",
+      "size": 196,
+      "sha256": "7716ae1cc86a028d480db7f842f3b6c0b53fb3cc409501f0469696604e2a1b89"
+    },
+    {
+      "rel": "aws_acm_certificate_this/versions.tf",
+      "size": 116,
+      "sha256": "3741e8938c559163b1a0ac9ed76772ec88702bd6c8e9531853a6a987388c0a8b"
+    },
+    {
+      "rel": "main.tf",
+      "size": 404,
+      "sha256": "ad9e57fc0f587261b31c38c68578789da8dde36aca8d48bb40c9d94200d89849"
+    },
+    {
+      "rel": "manifest.yaml",
+      "size": 742,
+      "sha256": "be4c782a77b4335235af010f22dcc370a162e8c96fe22f8aee7cf03c45eecb84"
+    },
+    {
+      "rel": "outputs.tf",
+      "size": 452,
+      "sha256": "9bdb225195771a8f7c96e38007a046a9265dd440695b988c5c53965152894b80"
+    },
+    {
+      "rel": "variables.tf",
+      "size": 556,
+      "sha256": "d6b1277161b2265f258f4ec652291dc5291e52ad219d794a7ae281cd17c0cc76"
+    },
+    {
+      "rel": "versions.tf",
+      "size": 146,
+      "sha256": "afb8889b136664202aae5c3d944a178530dee7f9ccd4c031b341d9426dc785d0"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "treeHash": "81135287ca52b6e7c773d56f97c9a9eb8f10004b1c243e2641be30a10d334178",
+  "entries": [
+    {
+      "rel": "aws_route53_record_this/main.tf",
+      "size": 532,
+      "sha256": "03d6aa5fcef9dbd035352ee7099f77c91b43c887ad2e314f34dff58dfd401688"
+    },
+    {
+      "rel": "aws_route53_record_this/outputs.tf",
+      "size": 124,
+      "sha256": "9e384e9282c5ebd71360a3c6210624b18ba915b6d710b2c496721188b568f613"
+    },
+    {
+      "rel": "aws_route53_record_this/variables.tf",
+      "size": 800,
+      "sha256": "86521b2326d3ddfa1a3f0fd06b3158629da0b00af9b4f93f71668bdfb092c9b2"
+    },
+    {
+      "rel": "aws_route53_record_this/versions.tf",
+      "size": 116,
+      "sha256": "3741e8938c559163b1a0ac9ed76772ec88702bd6c8e9531853a6a987388c0a8b"
+    },
+    {
+      "rel": "main.tf",
+      "size": 820,
+      "sha256": "2c6f39f97e0b800a38047973d98f695f76755167db8faa559a9fa85743d8ecec"
+    },
+    {
+      "rel": "manifest.yaml",
+      "size": 896,
+      "sha256": "833a137bd570d584e432f7fdf29aca11f6205714712c70e9ed892bad6b4ae9ba"
+    },
+    {
+      "rel": "outputs.tf",
+      "size": 259,
+      "sha256": "c88e402be5ac57df95f3bab7929e35531b99e64bffa30120666aab1612d4e6dc"
+    },
+    {
+      "rel": "variables.tf",
+      "size": 1047,
+      "sha256": "91f627dba31bced8b8bf6e134ee7f1c98f822d81849ff7bd234bee8383f9f5af"
+    },
+    {
+      "rel": "versions.tf",
+      "size": 146,
+      "sha256": "afb8889b136664202aae5c3d944a178530dee7f9ccd4c031b341d9426dc785d0"
+    }
+  ]
+}
