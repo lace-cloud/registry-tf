@@ -1,0 +1,55 @@
+{
+  "treeHash": "d90b8203405dea71d30e05e69d111cba552212b55db1ed38738ef30b119b8706",
+  "entries": [
+    {
+      "rel": "aws_ecr_lifecycle_policy_this/main.tf",
+      "size": 673,
+      "sha256": "2b899f17ce9c88fd02398b22a01e484c60b7d8f742b7b01ccdcd84fc7e25906b"
+    },
+    {
+      "rel": "aws_ecr_lifecycle_policy_this/variables.tf",
+      "size": 364,
+      "sha256": "ad8c1a81bf326250abe60eab437639e0a1dc127b1cfc2d721d87708490b9e087"
+    },
+    {
+      "rel": "aws_ecr_repository_this/main.tf",
+      "size": 505,
+      "sha256": "e3f18293cb53a933bc03cedd6670524f1acf617090c09813037405413138a88b"
+    },
+    {
+      "rel": "aws_ecr_repository_this/outputs.tf",
+      "size": 280,
+      "sha256": "ba7729589dfc640e7569c8d70f1b1a18cc839b9b02182acd945af7ef9841a736"
+    },
+    {
+      "rel": "aws_ecr_repository_this/variables.tf",
+      "size": 428,
+      "sha256": "0a56ec259c3f638bfdbcc6030b2f1b8ee1d4eeedf7dfb2c73953edce8277c615"
+    },
+    {
+      "rel": "main.tf",
+      "size": 994,
+      "sha256": "c943ad63f68c0f29b65bc567393c214782554bd62c9d12ee10fe87a362f21f0f"
+    },
+    {
+      "rel": "manifest.yaml",
+      "size": 756,
+      "sha256": "eaaab60477a8e93688b5abe85dc65380de354c1c9ca35461a0eba74533a1c883"
+    },
+    {
+      "rel": "outputs.tf",
+      "size": 517,
+      "sha256": "d15def9280a846162a41c1d71e462747ff68970210be36a45483b26e753645f1"
+    },
+    {
+      "rel": "variables.tf",
+      "size": 1174,
+      "sha256": "b2a54561618b66b0017cfff42a0197fb5798a35bc0a4511a36d95da44c5ff3e1"
+    },
+    {
+      "rel": "versions.tf",
+      "size": 41,
+      "sha256": "02c716237c9d7b95a9bb7c2f128ceb13d37dd94167d1a310045ee82dd6a4fd45"
+    }
+  ]
+}

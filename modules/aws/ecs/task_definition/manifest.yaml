@@ -12,34 +12,3 @@ configSchema:
 authors: ["Lace Team <team@lace.cloud>"]
 bundle:
   system: aws
-  modulePath: modules/aws/ecs/task_definition
-  gitUrl: https://github.com/lace-cloud/registry.git
-  gitTag: v1.0.0
-  example: |
-    module "task_definition" {
-      source = "git::https://github.com/lace-cloud/registry.git//modules/aws/ecs/task_definition?ref=v1.0.0"
-
-      family             = "my-app"
-      cpu                = 256
-      memory             = 512
-      execution_role_arn = "arn:aws:iam::123456789012:role/ecsTaskExecutionRole"
-      task_role_arn      = "arn:aws:iam::123456789012:role/ecsTaskRole"
-
-      container_definitions = jsonencode([
-        {
-          name      = "app"
-          image     = "nginx:latest"
-          essential = true
-          portMappings = [
-            {
-              containerPort = 80
-              protocol      = "tcp"
-            }
-          ]
-        }
-      ])
-
-      tags = {
-        Environment = "production"
-      }
-    }
