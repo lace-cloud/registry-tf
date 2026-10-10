@@ -7,7 +7,7 @@ AWS IAM role policy attachment for connecting policies to roles
 ```hcl
 module "iam_policy_attachment" {
   source  = "lace.cloud/lace/iam-policy-attachment/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

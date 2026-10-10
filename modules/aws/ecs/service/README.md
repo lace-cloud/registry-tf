@@ -7,7 +7,7 @@ AWS ECS Fargate service with load balancer integration and network configuration
 ```hcl
 module "ecs_service" {
   source  = "lace.cloud/lace/ecs-service/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

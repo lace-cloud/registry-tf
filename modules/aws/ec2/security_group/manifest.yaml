@@ -2,7 +2,7 @@ apiVersion: '1'
 axis: module
 author: lace
 name: ec2-security-group
-version: v1.0.1
+version: v1.0.2
 displayName: "AWS EC2 Security Group"
 description: "AWS EC2 Security Group with configurable ingress and egress rules"
 categories: [networking, security, ec2]

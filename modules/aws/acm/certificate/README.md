@@ -7,7 +7,7 @@ AWS ACM certificate with DNS or EMAIL validation
 ```hcl
 module "acm_certificate" {
   source  = "lace.cloud/lace/acm-certificate/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

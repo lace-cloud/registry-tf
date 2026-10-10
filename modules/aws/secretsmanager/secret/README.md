@@ -7,7 +7,7 @@ AWS Secrets Manager secret with optional initial value and KMS encryption
 ```hcl
 module "secretsmanager_secret" {
   source  = "lace.cloud/lace/secretsmanager-secret/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

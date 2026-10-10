@@ -7,7 +7,7 @@ AWS Cognito user pool with configurable password policy and email verification
 ```hcl
 module "cognito_user_pool" {
   source  = "lace.cloud/lace/cognito-user-pool/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

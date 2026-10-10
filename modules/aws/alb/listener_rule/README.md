@@ -7,7 +7,7 @@ AWS ALB listener rule with host/path conditions and forward, redirect, or fixed-
 ```hcl
 module "alb_listener_rule" {
   source  = "lace.cloud/lace/alb-listener-rule/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

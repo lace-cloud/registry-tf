@@ -7,7 +7,7 @@ AWS CloudWatch Log Group with configurable retention and encryption
 ```hcl
 module "cloudwatch_log_group" {
   source  = "lace.cloud/lace/cloudwatch-log-group/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

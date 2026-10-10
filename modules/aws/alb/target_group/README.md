@@ -7,7 +7,7 @@ AWS ALB target group with health check configuration for Fargate (IP target type
 ```hcl
 module "alb_target_group" {
   source  = "lace.cloud/lace/alb-target-group/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

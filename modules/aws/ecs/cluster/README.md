@@ -7,7 +7,7 @@ AWS ECS cluster with Container Insights and capacity provider configuration
 ```hcl
 module "ecs_cluster" {
   source  = "lace.cloud/lace/ecs-cluster/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

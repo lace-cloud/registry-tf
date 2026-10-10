@@ -7,7 +7,7 @@ AWS CloudWatch Metric Alarm for monitoring and alerting on AWS resource metrics
 ```hcl
 module "cloudwatch_metric_alarm" {
   source  = "lace.cloud/lace/cloudwatch-metric-alarm/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

@@ -7,7 +7,7 @@ AWS Route53 DNS record supporting both standard and alias record types
 ```hcl
 module "route53_record" {
   source  = "lace.cloud/lace/route53-record/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

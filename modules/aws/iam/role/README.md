@@ -7,7 +7,7 @@ AWS IAM role with configurable assume role policy and tags
 ```hcl
 module "iam_role" {
   source  = "lace.cloud/lace/iam-role/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

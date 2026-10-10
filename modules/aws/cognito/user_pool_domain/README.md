@@ -7,7 +7,7 @@ AWS Cognito hosted UI domain for a user pool
 ```hcl
 module "cognito_user_pool_domain" {
   source  = "lace.cloud/lace/cognito-user-pool-domain/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

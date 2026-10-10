@@ -7,7 +7,7 @@ AWS ECS task definition for Fargate with container definitions, CPU/memory, and 
 ```hcl
 module "ecs_task_definition" {
   source  = "lace.cloud/lace/ecs-task-definition/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

@@ -7,7 +7,7 @@ AWS IAM policy with configurable policy document and tags
 ```hcl
 module "iam_policy" {
   source  = "lace.cloud/lace/iam-policy/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

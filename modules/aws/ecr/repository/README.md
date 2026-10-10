@@ -7,7 +7,7 @@ AWS ECR repository with configurable image scanning, encryption, and lifecycle p
 ```hcl
 module "ecr_repository" {
   source  = "lace.cloud/lace/ecr-repository/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

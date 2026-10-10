@@ -2,7 +2,7 @@ apiVersion: '1'
 axis: module
 author: lace
 name: ecr-repository
-version: v1.0.1
+version: v1.0.2
 displayName: "AWS ECR Repository"
 description: "AWS ECR repository with configurable image scanning, encryption, and lifecycle policies"
 categories: [containers, ecr, storage]

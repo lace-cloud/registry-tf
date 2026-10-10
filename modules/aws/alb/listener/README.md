@@ -7,7 +7,7 @@ AWS ALB listener with default action and optional SSL certificate
 ```hcl
 module "alb_listener" {
   source  = "lace.cloud/lace/alb-listener/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

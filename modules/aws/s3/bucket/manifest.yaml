@@ -2,7 +2,7 @@ apiVersion: '1'
 axis: module
 author: lace
 name: s3-bucket
-version: v1.0.1
+version: v1.0.2
 displayName: "AWS S3 Bucket"
 description: "AWS S3 bucket with versioning, KMS encryption, public access block, lifecycle rules, and optional CORS configuration"
 categories: [storage, s3]

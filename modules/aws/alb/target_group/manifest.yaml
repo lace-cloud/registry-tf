@@ -2,7 +2,7 @@ apiVersion: '1'
 axis: module
 author: lace
 name: alb-target-group
-version: v1.0.1
+version: v1.0.2
 displayName: "AWS ALB Target Group"
 description: "AWS ALB target group with health check configuration for Fargate (IP target type)"
 categories: [networking, load-balancing, alb]

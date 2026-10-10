@@ -7,7 +7,7 @@ AWS S3 bucket with versioning, KMS encryption, public access block, lifecycle ru
 ```hcl
 module "s3_bucket" {
   source  = "lace.cloud/lace/s3-bucket/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

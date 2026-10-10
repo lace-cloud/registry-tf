@@ -7,7 +7,7 @@ AWS Application Load Balancer with subnets, security groups, and access logs
 ```hcl
 module "alb_load_balancer" {
   source  = "lace.cloud/lace/alb-load-balancer/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

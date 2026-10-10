@@ -7,7 +7,7 @@ AWS Cognito user pool app client with configurable OAuth flows, scopes, and toke
 ```hcl
 module "cognito_user_pool_client" {
   source  = "lace.cloud/lace/cognito-user-pool-client/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

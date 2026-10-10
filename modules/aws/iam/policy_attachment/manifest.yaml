@@ -2,7 +2,7 @@ apiVersion: '1'
 axis: module
 author: lace
 name: iam-policy-attachment
-version: v1.0.1
+version: v1.0.2
 displayName: "AWS IAM Role Policy Attachment"
 description: "AWS IAM role policy attachment for connecting policies to roles"
 categories: [iam, security, permissions]

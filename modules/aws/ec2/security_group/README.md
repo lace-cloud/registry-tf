@@ -7,7 +7,7 @@ AWS EC2 Security Group with configurable ingress and egress rules
 ```hcl
 module "ec2_security_group" {
   source  = "lace.cloud/lace/ec2-security-group/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }

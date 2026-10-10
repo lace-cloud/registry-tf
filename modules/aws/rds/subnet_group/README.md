@@ -7,7 +7,7 @@ AWS RDS DB subnet group for placing RDS instances within a VPC
 ```hcl
 module "rds_subnet_group" {
   source  = "lace.cloud/lace/rds-subnet-group/aws"
-  version = "1.0.1"
+  version = "1.0.2"
 
   # inputs: see variables.tf
 }
